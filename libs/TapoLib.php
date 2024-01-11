@@ -583,7 +583,7 @@ namespace TpLink
             return false;
         }
 
-        public function GetDeviceInfo(): bool
+        public function GetDeviceInfo(): array|false
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
             $this->SendDebug(__FUNCTION__, $Request, 0);
@@ -606,7 +606,7 @@ namespace TpLink
             return $Result;
         }
 
-        protected function SetVariables(array $Values)
+        protected function SetVariables(array $Values): void
         {
             foreach ($this->GetModuleIdents() as $Ident => $VarParams) {
                 if (!array_key_exists($Ident, $Values)) {
@@ -645,7 +645,7 @@ namespace TpLink
             }
             return true;
         }
-        protected function SetDeviceInfoVariables(array $Values): false|array
+        protected function SetDeviceInfoVariables(array $Values): bool
         {
             $SendValues = [];
             $AllIdents = $this->GetModuleIdents();
