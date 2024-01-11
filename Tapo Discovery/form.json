@@ -66,6 +66,26 @@
             "values": []
         },
         {
+            "name": "ErrorPopup",
+            "type": "PopupAlert",
+            "visible": false,
+            "popup": {
+                "items": [
+                    {
+                        "name": "ErrorTitle",
+                        "type": "Label",
+                        "bold": true,
+                        "caption": "No Devices found!"
+                    },
+                    {
+                        "name": "ErrorText",
+                        "type": "Label",
+                        "caption": "The combination of Docker and NAT is not supported because Broadcasts are not possible.\r\nPlease run the container in the host network.\r\nOr create and configure the required tapo instances manually."
+                    }
+                ]
+            }
+        },
+        {
             "type": "Label",
             "caption": "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:"
         },

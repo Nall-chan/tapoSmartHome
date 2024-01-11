@@ -49,6 +49,13 @@ class TapoDiscovery extends IPSModuleStrict
             return json_encode($Form);
         }
 
+        if (IPS_GetOption('NATSupport') && strpos(IPS_GetKernelPlatform(), 'Docker')) {
+            // not supported. Docker cannot forward Broadcast :(
+            $Form['actions'][2]['visible'] = true;
+            $this->SendDebug('FORM', json_encode($Form), 0);
+            $this->SendDebug('FORM', json_last_error_msg(), 0);
+            return json_encode($Form);
+        }
         $Form['actions'][0]['items'][0]['items'][0]['value'] = $this->ReadAttributeString(\TpLink\Attribute::Username);
         $Form['actions'][0]['items'][0]['items'][1]['value'] = $this->ReadAttributeString(\TpLink\Attribute::Password);
         $Form['actions'][1]['values'] = $this->GetDevices();
@@ -151,7 +158,7 @@ class TapoDiscovery extends IPSModuleStrict
                     continue;
                 }
                 $Data = substr($response, 16);
-                $this->SendDebug('Receive (' . $IPAddress . ':' . $Port . ')', $Data, 0);
+                $this->SendDebug('Receive (' . $IPAddress . ')', $Data, 0);
                 $JsonReceive = json_decode($Data, true);
                 if (!$JsonReceive) {
                     continue;
