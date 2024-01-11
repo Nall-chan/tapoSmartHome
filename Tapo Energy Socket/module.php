@@ -15,7 +15,7 @@ require_once dirname(__DIR__) . '/Tapo Socket/module.php';
  */
 class TapoEnergySocket extends TapoSocket
 {
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         //Never delete this line!
         $this->RegisterProfileInteger(\TpLink\VariableProfile::Runtime, '', '', ' minutes', 0, 0, 0);
@@ -29,7 +29,7 @@ class TapoEnergySocket extends TapoSocket
         parent::ApplyChanges();
     }
 
-    public function RequestState()
+    public function RequestState(): bool
     {
         if (parent::RequestState()) {
             $Result = $this->GetEnergyUsage();
@@ -47,7 +47,7 @@ class TapoEnergySocket extends TapoSocket
         return false;
     }
 
-    public function GetEnergyUsage()
+    public function GetEnergyUsage(): false|array
     {
         $Request = json_encode([
             'method'         => 'get_energy_usage',

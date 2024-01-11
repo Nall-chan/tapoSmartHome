@@ -88,21 +88,21 @@ namespace TpLink\Api
         private const requestTimeMils = 'requestTimeMils';
         private const TerminalUUID = 'terminalUUID';
         public static $ErrorCodes = [
-            0    => 'Success',
-            -1010=> 'Invalid Public Key Length',
-            -1501=> 'Invalid Request or Credentials',
-            1002 => 'Incorrect Request',
-            1003 => 'Invalid Protocol',
-            -1003=> 'JSON formatting error',
-            -1008=> 'Value out of range',
-            9999 => 'Session Timeout'
+            0     => 'Success',
+            -1010 => 'Invalid Public Key Length',
+            -1501 => 'Invalid Request or Credentials',
+            1002  => 'Incorrect Request',
+            1003  => 'Invalid Protocol',
+            -1003 => 'JSON formatting error',
+            -1008 => 'Value out of range',
+            9999  => 'Session Timeout'
         ];
 
         public static function BuildHandshakeRequest(string $publicKey): string
         {
             return json_encode([
-                self::Method=> Method::Handshake,
-                self::Params=> [
+                self::Method => Method::Handshake,
+                self::Params => [
                     self::ParamHandshakeKey          => mb_convert_encoding($publicKey, 'ISO-8859-1', 'UTF-8')
                 ],
                 self::requestTimeMils => 0
@@ -129,8 +129,8 @@ namespace TpLink\Api
         public static function BuildDiscoveryRequest(string $publicKey): string
         {
             return json_encode([
-                self::Params=> [
-                    self::DiscoveryKey=> mb_convert_encoding($publicKey, 'ISO-8859-1', 'UTF-8')
+                self::Params => [
+                    self::DiscoveryKey => mb_convert_encoding($publicKey, 'ISO-8859-1', 'UTF-8')
                 ]
             ]);
         }
@@ -149,9 +149,9 @@ namespace TpLink\Api
         public static function BuildSecurePassthroughRequest(string $EncryptedPayload): string
         {
             return json_encode([
-                Protocol::Method=> Method::SecurePassthrough,
-                Protocol::Params=> [
-                    self::Request=> $EncryptedPayload
+                Protocol::Method => Method::SecurePassthrough,
+                Protocol::Params => [
+                    self::Request => $EncryptedPayload
                 ]]);
         }
     }
@@ -225,11 +225,11 @@ namespace TpLink
         public const rssi = 'rssi'; //todo
 
         public static $Variables = [
-            self::device_on=> [
-                IPSVarName   => 'State',
-                IPSVarType   => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile=> VariableProfile::Switch,
-                HasAction    => true
+            self::device_on => [
+                IPSVarName    => 'State',
+                IPSVarType    => VARIABLETYPE_BOOLEAN,
+                IPSVarProfile => VariableProfile::Switch,
+                HasAction     => true
             ],
             self::rssi => [
                 IPSVarName              => 'Rssi',
@@ -262,31 +262,31 @@ namespace TpLink
         public const color_rgb = 'color_rgb';
 
         public static $Variables = [
-            self::overheated=> [
-                IPSVarName   => 'Overheated',
-                IPSVarType   => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile=> '~Alert',
-                HasAction    => false
+            self::overheated => [
+                IPSVarName    => 'Overheated',
+                IPSVarType    => VARIABLETYPE_BOOLEAN,
+                IPSVarProfile => '~Alert',
+                HasAction     => false
             ],
-            self::brightness=> [
-                IPSVarName   => 'Brightness',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::Brightness,
-                HasAction    => true
+            self::brightness => [
+                IPSVarName    => 'Brightness',
+                IPSVarType    => VARIABLETYPE_INTEGER,
+                IPSVarProfile => VariableProfile::Brightness,
+                HasAction     => true
             ],
-            self::color_temp=> [
-                IPSVarName   => 'Color temp',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::ColorTemp,
-                HasAction    => true
+            self::color_temp => [
+                IPSVarName    => 'Color temp',
+                IPSVarType    => VARIABLETYPE_INTEGER,
+                IPSVarProfile => VariableProfile::ColorTemp,
+                HasAction     => true
             ],
-            self::color_rgb=> [
-                IPSVarName     => 'Color',
-                IPSVarType     => VARIABLETYPE_INTEGER,
-                IPSVarProfile  => VariableProfile::HexColor,
-                HasAction      => true,
-                ReceiveFunction=> 'HSVtoRGB',
-                SendFunction   => 'RGBtoHSV'
+            self::color_rgb => [
+                IPSVarName      => 'Color',
+                IPSVarType      => VARIABLETYPE_INTEGER,
+                IPSVarProfile   => VariableProfile::HexColor,
+                HasAction       => true,
+                ReceiveFunction => 'HSVtoRGB',
+                SendFunction    => 'RGBtoHSV'
             ],
         ];
     }
@@ -299,19 +299,19 @@ namespace TpLink
         public const child_protection = 'child_protection';
 
         public static $Variables = [
-            self::target_temp=> [
-                IPSVarName   => 'Setpoint temperature',
-                IPSVarType   => VARIABLETYPE_FLOAT,
-                IPSVarProfile=> VariableProfile::TargetTemperature,
-                HasAction    => true
+            self::target_temp => [
+                IPSVarName    => 'Setpoint temperature',
+                IPSVarType    => VARIABLETYPE_FLOAT,
+                IPSVarProfile => VariableProfile::TargetTemperature,
+                HasAction     => true
             ],
-            self::frost_protection_on=> [
+            self::frost_protection_on => [
                 IPSVarName     => 'Frost protection',
                 IPSVarType     => VARIABLETYPE_BOOLEAN,
                 IPSVarProfile  => VariableProfile::Switch,
                 HasAction      => true
             ],
-            self::child_protection=> [
+            self::child_protection => [
                 IPSVarName     => 'Child Protection',
                 IPSVarType     => VARIABLETYPE_BOOLEAN,
                 IPSVarProfile  => VariableProfile::Switch,
@@ -333,47 +333,47 @@ namespace TpLink
     class KelvinTable
     {
         private static $Table = [
-            2500=> [255, 161, 72],
-            2600=> [255, 165, 79],
-            2700=> [255, 169, 87],
-            2800=> [255, 173, 94],
-            2900=> [255, 177, 101],
-            3000=> [255, 180, 107],
-            3100=> [255, 184, 114],
-            3200=> [255, 187, 120],
-            3300=> [255, 190, 126],
-            3400=> [255, 193, 132],
-            3500=> [255, 196, 137],
-            3600=> [255, 199, 143],
-            3700=> [255, 201, 148],
-            3800=> [255, 204, 153],
-            3900=> [255, 206, 159],
-            4000=> [255, 209, 163],
-            4100=> [255, 211, 168],
-            4200=> [255, 213, 173],
-            4300=> [255, 215, 177],
-            4400=> [255, 217, 182],
-            4500=> [255, 219, 186],
-            4600=> [255, 221, 190],
-            4700=> [255, 223, 194],
-            4800=> [255, 225, 198],
-            4900=> [255, 227, 202],
-            5000=> [255, 228, 206],
-            5100=> [255, 230, 210],
-            5200=> [255, 232, 213],
-            5300=> [255, 233, 217],
-            5400=> [255, 235, 220],
-            5500=> [255, 236, 224],
-            5600=> [255, 238, 227],
-            5700=> [255, 239, 230],
-            5800=> [255, 240, 233],
-            5900=> [255, 242, 236],
-            6000=> [255, 243, 239],
-            6100=> [255, 244, 242],
-            6200=> [255, 245, 245],
-            6300=> [255, 246, 247],
-            6400=> [255, 248, 251],
-            6500=> [255, 249, 253]
+            2500 => [255, 161, 72],
+            2600 => [255, 165, 79],
+            2700 => [255, 169, 87],
+            2800 => [255, 173, 94],
+            2900 => [255, 177, 101],
+            3000 => [255, 180, 107],
+            3100 => [255, 184, 114],
+            3200 => [255, 187, 120],
+            3300 => [255, 190, 126],
+            3400 => [255, 193, 132],
+            3500 => [255, 196, 137],
+            3600 => [255, 199, 143],
+            3700 => [255, 201, 148],
+            3800 => [255, 204, 153],
+            3900 => [255, 206, 159],
+            4000 => [255, 209, 163],
+            4100 => [255, 211, 168],
+            4200 => [255, 213, 173],
+            4300 => [255, 215, 177],
+            4400 => [255, 217, 182],
+            4500 => [255, 219, 186],
+            4600 => [255, 221, 190],
+            4700 => [255, 223, 194],
+            4800 => [255, 225, 198],
+            4900 => [255, 227, 202],
+            5000 => [255, 228, 206],
+            5100 => [255, 230, 210],
+            5200 => [255, 232, 213],
+            5300 => [255, 233, 217],
+            5400 => [255, 235, 220],
+            5500 => [255, 236, 224],
+            5600 => [255, 238, 227],
+            5700 => [255, 239, 230],
+            5800 => [255, 240, 233],
+            5900 => [255, 242, 236],
+            6000 => [255, 243, 239],
+            6100 => [255, 244, 242],
+            6200 => [255, 245, 245],
+            6300 => [255, 246, 247],
+            6400 => [255, 248, 251],
+            6500 => [255, 249, 253]
         ];
 
         public static function ToRGB(int $Kelvin)
@@ -482,7 +482,7 @@ namespace TpLink
      * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, float $StepSize)
      * @method bool SendDebug(string $Message, mixed $Data, int $Format)
      */
-    class Device extends \IPSModule
+    class Device extends \IPSModuleStrict
     {
         use \Tapo\BufferHelper;
         use \Tapo\DebugHelper;
@@ -493,7 +493,7 @@ namespace TpLink
 
         protected static $ModuleIdents = [];
 
-        public function Create()
+        public function Create(): void
         {
             //Never delete this line!
             parent::Create();
@@ -510,13 +510,13 @@ namespace TpLink
             $this->InitBuffers();
         }
 
-        public function Destroy()
+        public function Destroy(): void
         {
             //Never delete this line!
             parent::Destroy();
         }
 
-        public function ApplyChanges()
+        public function ApplyChanges(): void
         {
             $this->SetTimerInterval(\TpLink\Timer::RequestState, 0);
             $this->SetSummary($this->ReadPropertyString(\TpLink\Property::Host));
@@ -533,7 +533,7 @@ namespace TpLink
                 $this->SetStatus(IS_INACTIVE);
             }
         }
-        public function RequestAction($Ident, $Value)
+        public function RequestAction(string $Ident, mixed $Value): void
         {
             $AllIdents = $this->GetModuleIdents();
             if (array_key_exists($Ident, $AllIdents)) {
@@ -549,12 +549,12 @@ namespace TpLink
             restore_error_handler();
         }
 
-        public function GetConfigurationForm()
+        public function GetConfigurationForm(): string
         {
             return file_get_contents(__DIR__ . '/form.json');
         }
 
-        public function Translate($Text)
+        public function Translate(string $Text): string
         {
             $translation = json_decode(file_get_contents(__DIR__ . '/locale.json'), true);
             $language = IPS_GetSystemLanguage();
@@ -573,7 +573,7 @@ namespace TpLink
             return $Text;
         }
 
-        public function RequestState()
+        public function RequestState(): bool
         {
             $Result = $this->GetDeviceInfo();
             if (is_array($Result)) {
@@ -583,7 +583,7 @@ namespace TpLink
             return false;
         }
 
-        public function GetDeviceInfo()
+        public function GetDeviceInfo(): bool
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
             $this->SendDebug(__FUNCTION__, $Request, 0);
@@ -631,7 +631,7 @@ namespace TpLink
             }
         }
 
-        protected function SetStatus($Status)
+        protected function SetStatus(int $Status): bool
         {
             if ($Status != IS_ACTIVE) {
                 $this->InitBuffers();
@@ -645,7 +645,7 @@ namespace TpLink
             }
             return true;
         }
-        protected function SetDeviceInfoVariables(array $Values)
+        protected function SetDeviceInfoVariables(array $Values): false|array
         {
             $SendValues = [];
             $AllIdents = $this->GetModuleIdents();
@@ -668,7 +668,7 @@ namespace TpLink
             return $this->SetDeviceInfo($SendValues);
         }
 
-        protected function SetDeviceInfo(array $Values)
+        protected function SetDeviceInfo(array $Values): bool
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::SetDeviceInfo, $this->terminalUUID, $Values);
             $Response = $this->SendRequest($Request);
@@ -712,7 +712,7 @@ namespace TpLink
             }
         }
 
-        protected function CurlDebug(int $HttpCode)
+        protected function CurlDebug(int $HttpCode): void
         {
             switch ($HttpCode) {
                 case 0:
@@ -735,7 +735,7 @@ namespace TpLink
             echo $errstr . PHP_EOL;
             return true;
         }
-        private function GetModuleIdents()
+        private function GetModuleIdents(): array
         {
             $AllIdents = [];
             foreach (static::$ModuleIdents as $VariableIdentClassName) {
@@ -745,7 +745,7 @@ namespace TpLink
             return $AllIdents;
         }
 
-        private function InitBuffers()
+        private function InitBuffers(): void
         {
             $this->token = '';
             $this->cookie = '';
@@ -792,7 +792,7 @@ namespace TpLink
             return false;
         }
 
-        private function CurlRequest(string $Url, string $Payload, bool $noError = false)
+        private function CurlRequest(string $Url, string $Payload, bool $noError = false): string|bool
         {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $Url);
@@ -915,7 +915,7 @@ namespace TpLink
             $TpKlapCipher = new \TpLink\KlapCipher($this->KlapLocalSeed, $this->KlapRemoteSeed, $this->KlapUserHash, $this->KlapSequenz);
             $EncryptedPayload = $TpKlapCipher->encrypt($Payload);
             $this->KlapSequenz = $TpKlapCipher->getSequenz();
-            $Url = \TpLink\Api\Protocol . $this->ReadPropertyString(\TpLink\Property::Host) . \TpLink\Api\Url::KlapRequest . http_build_query(['seq'=>$this->KlapSequenz]);
+            $Url = \TpLink\Api\Protocol . $this->ReadPropertyString(\TpLink\Property::Host) . \TpLink\Api\Url::KlapRequest . http_build_query(['seq' => $this->KlapSequenz]);
             $Result = $this->CurlRequest($Url, $EncryptedPayload);
             if ($Result === false) {
                 if (!$this->Init()) {
@@ -956,7 +956,7 @@ namespace TpLink
 
     trait TpLinkSecurePassthroug
     {
-        private function Handshake()
+        private function Handshake(): int|bool
         {
             $Key = (new \phpseclib\Crypt\RSA())->createKey(1024);
             $privateKey = $Key['privatekey'];
@@ -1054,4 +1054,3 @@ namespace TpLink
         }
     }
 }
-

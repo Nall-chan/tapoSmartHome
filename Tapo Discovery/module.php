@@ -18,7 +18,7 @@ require_once dirname(__DIR__) . '/libs/TapoLib.php';
  * @method bool SendDebug(string $Message, mixed $Data, int $Format)
  *
  */
-class TapoDiscovery extends IPSModule
+class TapoDiscovery extends IPSModuleStrict
 {
     use \Tapo\DebugHelper;
 
@@ -31,7 +31,7 @@ class TapoDiscovery extends IPSModule
         $this->RegisterAttributeString(\TpLink\Attribute::Password, '');
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value): void
     {
         if ($Ident == 'Save') {
             $Data = explode(':', $Value);
@@ -42,7 +42,7 @@ class TapoDiscovery extends IPSModule
         }
     }
 
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
         if ($this->GetStatus() == IS_CREATING) {
@@ -151,7 +151,7 @@ class TapoDiscovery extends IPSModule
                     continue;
                 }
                 $Data = substr($response, 16);
-                $this->SendDebug('Receive (' . $IPAddress . ')', $Data, 0);
+                $this->SendDebug('Receive (' . $IPAddress . ':' . $Port . ')', $Data, 0);
                 $JsonReceive = json_decode($Data, true);
                 if (!$JsonReceive) {
                     continue;

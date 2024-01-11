@@ -21,7 +21,7 @@ class TapoLight extends \TpLink\Device
         '\TpLink\VariableIdentLight'
     ];
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         $this->RegisterProfileInteger(\TpLink\VariableProfile::Brightness, 'Intensity', '', '%', 1, 100, 1);
         $this->RegisterProfileInteger(\TpLink\VariableProfile::ColorTemp, '', '', ' K', 2500, 6500, 1);
@@ -37,7 +37,7 @@ class TapoLight extends \TpLink\Device
      * @param  array $Values
      * @return int
      */
-    protected function HSVtoRGB(array $Values)
+    protected function HSVtoRGB(array $Values): int
     {
         $color_temp = $Values[\TpLink\VariableIdentLight::color_temp];
         if ($color_temp > 0) {
@@ -107,7 +107,7 @@ class TapoLight extends \TpLink\Device
      * @param  int $RGB
      * @return array
      */
-    protected function RGBtoHSV(int $RGB)
+    protected function RGBtoHSV(int $RGB): array
     {
         $Values[\TpLink\VariableIdentLight::color_temp] = 0;
         $Values[\TpLink\VariableIdentLight::hue] = 0;
