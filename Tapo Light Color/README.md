@@ -5,7 +5,7 @@
 [![Run Tests](https://github.com/Nall-chan/SSHClient/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)  
 [![Spenden](https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_SM.gif)](#2-spenden)
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
-# tapo Light  <!-- omit in toc -->
+# tapo Light Color <!-- omit in toc -->
 
 ## Inhaltsverzeichnis <!-- omit in toc -->
 
@@ -26,7 +26,7 @@
 
 ## 1. Funktionsumfang
 
- - Instanz für Lampen ohne Farbe  
+ - Instanz für Lampen und LED-Stripes mir Farbe  
  
 ## 2. Voraussetzungen
 
@@ -74,12 +74,14 @@ Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu 
 | rssi       | Rssi           | integer |
 | overheated | Überhitzt      | boolean |
 | brightness | Helligkeit     | integer |
-
+| color_temp | Farbtemperatur | integer |
+| color_rgb  | Farbe          | integer |
 
 
 ### Profile
 | Name            | Typ     | genutzt von |
 | --------------- | ------- | ----------- |
+| Tapo.ColorTemp  | integer | color_temp  |
 | Tapo.Brightness | integer | brightness  |
 
 ## 6. PHP-Befehlsreferenz
