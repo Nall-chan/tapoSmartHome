@@ -91,7 +91,8 @@ namespace TpLink\Crypt
             $this->key = $key;
             $this->iv = $iv;
         }
-        public function encrypt($data)
+
+        public function encrypt(string $data): string
         {
             $cipher = new \phpseclib\Crypt\AES('cbc');
             $cipher->enablePadding();
@@ -101,7 +102,7 @@ namespace TpLink\Crypt
             return base64_encode($encrypted);
         }
 
-        public function decrypt($data)
+        public function decrypt(string $data): string
         {
             $cipher = new \phpseclib\Crypt\AES('cbc');
             $cipher->enablePadding();
@@ -114,7 +115,7 @@ namespace TpLink\Crypt
 
     trait SecurePassthroug
     {
-        private function Handshake()
+        private function Handshake(): bool|int
         {
             $Key = (new \phpseclib\Crypt\RSA())->createKey(1024);
             $privateKey = $Key['privatekey'];

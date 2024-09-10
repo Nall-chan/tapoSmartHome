@@ -30,7 +30,7 @@ class TapoStripeColor extends TapoLightColor
         \TpLink\VariableIdent\LightEffect
     ];
 
-    public function Create()
+    public function Create(): void
     {
         parent::Create();
         $Effects = json_decode(file_get_contents(dirname(__DIR__) . '/libs/effects.json'), true);
@@ -46,7 +46,7 @@ class TapoStripeColor extends TapoLightColor
         $this->LastEffect = [];
     }
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         $OldEffects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
         $NewEffects = [];
@@ -69,7 +69,7 @@ class TapoStripeColor extends TapoLightColor
         parent::ApplyChanges();
     }
 
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
         $Form = json_decode(parent::GetConfigurationForm(), true);
         $AddElements = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -91,7 +91,7 @@ class TapoStripeColor extends TapoLightColor
         return json_encode($Form);
     }
 
-    public function RequestAction($Ident, $Value)
+    public function RequestAction(string $Ident, mixed $Value): void
     {
         if ($Ident == 'ClearEffects') {
             $this->ClearEffects();
@@ -106,7 +106,7 @@ class TapoStripeColor extends TapoLightColor
      * @param  array $Values
      * @return string VariableValue id for lighting_effect
      */
-    protected function LightEffectToVariable(array $Values)
+    protected function LightEffectToVariable(array $Values): ?string
     {
         $enabled = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0;
         $effectId = '';
@@ -143,7 +143,7 @@ class TapoStripeColor extends TapoLightColor
      * @param  array $Values
      * @return int Brightness
      */
-    protected function BrightnessToVariable(array $Values)
+    protected function BrightnessToVariable(array $Values): int
     {
         $enabled = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0;
         if ($enabled) {
@@ -160,7 +160,7 @@ class TapoStripeColor extends TapoLightColor
      * @param  array $Values
      * @return int
      */
-    protected function HSVtoRGB(array $Values)
+    protected function HSVtoRGB(array $Values): int
     {
         $enabled = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0;
         if ($enabled) {
@@ -175,9 +175,9 @@ class TapoStripeColor extends TapoLightColor
      * ActivateLightEffect SendFunction
      *
      * @param  string $id lighting_effect value (id)
-     * @return array all values
+     * @return bool
      */
-    protected function ActivateLightEffect(string $id)
+    protected function ActivateLightEffect(string $id): bool
     {
         $Effect = $this->GetEffectById($id);
         if (!count($Effect)) {
@@ -197,7 +197,7 @@ class TapoStripeColor extends TapoLightColor
      * SendBrightness SendFunction
      * @return array
      */
-    protected function SendBrightness(int $Brightness)
+    protected function SendBrightness(int $Brightness): bool|array
     {
         $Effect = $this->LastEffect;
         if (count($Effect)) {
@@ -213,7 +213,7 @@ class TapoStripeColor extends TapoLightColor
         return [\TpLink\VariableIdentLight::brightness => $Brightness];
     }
 
-    private function GetEffectById(string $id)
+    private function GetEffectById(string $id): array
     {
         $Effects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
         $Index = array_search($id, array_column($Effects, 'id'));
@@ -223,7 +223,7 @@ class TapoStripeColor extends TapoLightColor
         return $Effects[$Index];
     }
 
-    private function UpdateEffectById(string $id, array $Effect)
+    private function UpdateEffectById(string $id, array $Effect): void
     {
         $Effects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
         $Index = array_search($id, array_column($Effects, 'id'));
@@ -235,10 +235,9 @@ class TapoStripeColor extends TapoLightColor
         $this->WriteAttributeArray(\TpLink\Attribute::LightEffects, $Effects);
         $EffectsProfileName = sprintf(\TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][IPSVarProfile], $this->InstanceID);
         IPS_SetVariableProfileAssociation($EffectsProfileName, $id, $Effect['name'], '', -1);
-
     }
 
-    private function ClearEffects()
+    private function ClearEffects(): void
     {
         $Effects = json_decode(file_get_contents(dirname(__DIR__) . '/libs/effects.json'), true);
         $EffectsProperty = [];

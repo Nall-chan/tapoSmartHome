@@ -23,7 +23,7 @@ class TapoSocket extends \TpLink\Device
         \TpLink\VariableIdent\Socket
     ];
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         // Migrate Old 'State' Var to 'device_on' Var
         $oldVar = @$this->GetIDForIdent('State');

@@ -23,7 +23,7 @@ class TapoMultiSockets extends \TpLink\Device
         \TpLink\VariableIdent\Socket
     ];
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         //Never delete this line!
         parent::ApplyChanges();
@@ -40,7 +40,7 @@ class TapoMultiSockets extends \TpLink\Device
         }
     }
 
-    public function RequestState()
+    public function RequestState(): bool
     {
         if (parent::RequestState()) {
             foreach ($this->ChildIDs as $ChildID) {
@@ -60,7 +60,7 @@ class TapoMultiSockets extends \TpLink\Device
         return false;
     }
 
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
         $Form = json_decode(parent::GetConfigurationForm(), true);
         unset($Form['elements'][3]);

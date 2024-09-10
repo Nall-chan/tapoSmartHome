@@ -54,7 +54,7 @@ namespace TpLink
      * @method void UnregisterProfile(string $Name)
      * @method bool SendDebug(string $Message, mixed $Data, int $Format)
      */
-    class Device extends \IPSModule
+    class Device extends \IPSModuleStrict
     {
         use \Tapo\BufferHelper;
         use \Tapo\DebugHelper;
@@ -66,7 +66,7 @@ namespace TpLink
 
         protected static $ModuleIdents = [];
 
-        public function Create()
+        public function Create(): void
         {
             //Never delete this line!
             parent::Create();
@@ -84,13 +84,13 @@ namespace TpLink
             $this->ChildIDs = [];
         }
 
-        public function Destroy()
+        public function Destroy(): void
         {
             //Never delete this line!
             parent::Destroy();
         }
 
-        public function ApplyChanges()
+        public function ApplyChanges(): void
         {
             //Never delete this line!
             parent::ApplyChanges();
@@ -112,7 +112,7 @@ namespace TpLink
             }
         }
 
-        public function RequestAction($Ident, $Value)
+        public function RequestAction(string $Ident, mixed $Value): void
         {
             $SendIdent = $Ident;
             if (substr($Ident, 0, 4) == 'Pos_') {
@@ -136,12 +136,12 @@ namespace TpLink
             restore_error_handler();
         }
 
-        public function GetConfigurationForm()
+        public function GetConfigurationForm(): string
         {
             return file_get_contents(__DIR__ . '/form.json');
         }
 
-        public function Translate($Text)
+        public function Translate(string $Text): string
         {
             $translation = json_decode(file_get_contents(__DIR__ . '/locale.json'), true);
             $language = IPS_GetSystemLanguage();
@@ -160,7 +160,7 @@ namespace TpLink
             return $Text;
         }
 
-        public function RequestState()
+        public function RequestState(): bool
         {
             $Result = $this->GetDeviceInfo();
             if (is_array($Result)) {
@@ -220,7 +220,7 @@ namespace TpLink
             }*/
         }
 
-        public function GetDeviceInfo()
+        public function GetDeviceInfo(): false|array
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
             $Response = $this->SendRequest($Request);
@@ -236,7 +236,7 @@ namespace TpLink
             return $Response;
         }
 
-        protected function SetVariables(array $Values)
+        protected function SetVariables(array $Values): void
         {
             $NamePrefix = '';
             $IdentPrefix = '';
@@ -272,7 +272,7 @@ namespace TpLink
             }
         }
 
-        protected function SetStatus($Status)
+        protected function SetStatus($Status): bool
         {
             if ($Status != IS_ACTIVE) {
                 $this->InitBuffers();
@@ -287,7 +287,7 @@ namespace TpLink
             return true;
         }
 
-        protected function SendInfoVariables(array $Values)
+        protected function SendInfoVariables(array $Values): bool
         {
             $SendValues = [];
             if (array_key_exists(\TpLink\api\Result::DeviceID, $Values)) {
@@ -323,7 +323,7 @@ namespace TpLink
             return $this->SetDeviceInfo($SendValues);
         }
 
-        protected function SetDeviceInfo(array $Values)
+        protected function SetDeviceInfo(array $Values): bool
         {
             if (array_key_exists(\TpLink\api\Result::DeviceID, $Values)) {
                 $ChildID = $Values[\TpLink\api\Result::DeviceID];
@@ -364,7 +364,7 @@ namespace TpLink
             return $Values;
         }*/
 
-        protected function SecondsToString(array $Values)
+        protected function SecondsToString(array $Values): ?string
         {
             if (!isset($Values[\TpLink\VariableIdentSocket::on_time])) {
                 return null;
@@ -378,7 +378,7 @@ namespace TpLink
          * @param  array $TapoRequest
          * @return null|array
          */
-        protected function SendRequest(array $TapoRequest)
+        protected function SendRequest(array $TapoRequest): ?array
         {
             $Request = json_encode($TapoRequest);
             $this->SendDebug(__FUNCTION__, $Request, 0);
@@ -426,7 +426,7 @@ namespace TpLink
             return $Result;
         }
 
-        protected function CurlDebug(int $HttpCode)
+        protected function CurlDebug(int $HttpCode): void
         {
             switch ($HttpCode) {
                 case 0:
@@ -450,7 +450,7 @@ namespace TpLink
             return true;
         }
 
-        private static function GetModuleIdents()
+        private static function GetModuleIdents(): array
         {
             $AllIdents = [];
             foreach (static::$ModuleIdents as $VariableIdentClassName) {
@@ -460,7 +460,7 @@ namespace TpLink
             return $AllIdents;
         }
 
-        private function InitBuffers()
+        private function InitBuffers(): void
         {
             $this->token = '';
             $this->cookie = '';
@@ -507,7 +507,7 @@ namespace TpLink
             return false;
         }
 
-        private function CurlRequest(string $Url, string $Payload, bool $noError = false)
+        private function CurlRequest(string $Url, string $Payload, bool $noError = false): false|string
         {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $Url);

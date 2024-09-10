@@ -16,7 +16,7 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  */
 class TapoHubIO extends \TpLink\Device
 {
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         //Never delete this line!
         parent::ApplyChanges();
@@ -36,7 +36,7 @@ class TapoHubIO extends \TpLink\Device
         }
     }
 
-    public function RequestState()
+    public function RequestState(): bool
     {
         $Result = $this->GetDeviceInfo(); // Eigene Vars des Hub laden und an Child senden
         if ($Result) {
@@ -75,7 +75,7 @@ class TapoHubIO extends \TpLink\Device
         return false;
     }
 
-    public function ForwardData($JSONString)
+    public function ForwardData(string $JSONString): string
     {
         $Data = json_decode($JSONString, true);
         $this->SendDebug('Forward', $Data, 0);

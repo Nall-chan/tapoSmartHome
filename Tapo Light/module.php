@@ -23,7 +23,7 @@ class TapoLight extends \TpLink\Device
         \TpLink\VariableIdent\Light
     ];
 
-    public function ApplyChanges()
+    public function ApplyChanges(): void
     {
         $this->RegisterProfileInteger(\TpLink\VariableProfile::Brightness, 'Intensity', '', '%', 1, 100, 1);
         //Never delete this line!
