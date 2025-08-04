@@ -103,7 +103,7 @@ class TapoDiscovery extends IPSModuleStrict
                     \TpLink\Property::Mac            => $Device[\TpLink\Api\Result::Mac],
                     \TpLink\Property::Username       => $this->ReadAttributeString(\TpLink\Attribute::Username),
                     \TpLink\Property::Password       => $this->ReadAttributeString(\TpLink\Attribute::Password),
-                    \TpLink\Property::Protocol       => $Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::Protocol]
+                    \TpLink\Property::Protocol       => $Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::Protocol] ?? 'AES'
                 ]
             ];
             if ($Guid == \TpLink\GUID::Hub) {

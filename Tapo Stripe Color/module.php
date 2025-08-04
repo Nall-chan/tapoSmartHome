@@ -41,7 +41,6 @@ class TapoStripeColor extends TapoLightColor
             $EffectsProperty[] = $Item;
         }
         $this->RegisterPropertyString(\TpLink\Property::LightEffectsEnabled, json_encode($EffectsProperty));
-        //$this->RegisterAttributeArray(\TpLink\Attribute::LightEffectsEnabled, json_encode($EffectsProperty));
         $this->RegisterAttributeArray(\TpLink\Attribute::LightEffects, $Effects, 5);
         $this->LastEffect = [];
     }
