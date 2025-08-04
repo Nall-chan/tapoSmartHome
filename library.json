@@ -4,9 +4,9 @@
     "author": "Michael Tröger",
     "url": "https://github.com/Nall-chan/TapoSmartHome",
     "compatibility": {
-        "version": "6.0"
+        "version": "8.1"
     },
-    "version": "1.70",
-    "build": 170,
-    "date": 1725008409
+    "version": "2.00",
+    "build": 200,
+    "date": 1754317680
 }
