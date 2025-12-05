@@ -1,6 +1,6 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
-[![Version](https://img.shields.io/badge/Modul%20Version-1.70-blue.svg)](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865)
-[![Version](https://img.shields.io/badge/Symcon%20Version-6.1%20%3E-green.svg)](https://www.symcon.de/service/dokumentation/installation/migrationen/v60-v61-q1-2022/)  
+[![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865)
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v80-v81-q3-2025/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/tapoSmartHome/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)
 [![Run Tests](https://github.com/Nall-chan/tapoSmartHome/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)  
@@ -8,6 +8,7 @@
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
 
 # tapo SmartHome <!-- omit in toc -->
+
 Einbindung der TP-Link tapo SmartHome Geräte
 
 ## Inhaltsverzeichnis <!-- omit in toc -->
@@ -40,73 +41,96 @@ Einbindung der TP-Link tapo SmartHome Geräte
 
 ## 1. Nicht Geräte Instanzen
 
-### [tapo Discovery](Tapo%20Discovery/README.md)  
- - Auffinden von Geräten und Hubs im Netzwerk und Anlegen der Geräte bzw. Konfigurator-Instanz inklusive Gateway in IPS.  
+### [tapo Discovery](Tapo%20Discovery/README.md)
 
-### [tapo Configurator](Tapo%20Configurator/README.md)  
- - Einfaches Anlegen von Geräte-Instanzen welche mit einem Smart Hub verbunden sind.  
+- Auffinden von Geräten und Hubs im Netzwerk und Anlegen der Geräte bzw. Konfigurator-Instanz inklusive Gateway in IPS.  
+
+### [tapo Configurator](Tapo%20Configurator/README.md)
+
+- Einfaches Anlegen von Geräte-Instanzen welche mit einem Smart Hub verbunden sind.  
   
-### [tapo Hub IO](Tapo%20Hub%20IO/README.md)  
+### [tapo Hub IO](Tapo%20Hub%20IO/README.md)
+
  Smart Hub Instanz als IO Instanz zur Kommunikation mit den angelernten Funk-Geräten und Symcon.  
  Folgende Hubs werden unterstützt:  
- - KH100
- - H100
- - H200
+
+- KH100
+- H100
+- H200
 
 ## 2. Netzwerk Geräte Instanzen
 
-### [tapo Light](Tapo%20Light/README.md)  
-  Leuchtmittel:  
-  - L510 (E27, dimmbar)  
-  - L520 (E27, dimmbar)  
-  - L610 (GU10, dimmbar)  
----    
-### [tapo Light Color](Tapo%20Light%20Color/README.md)  
-  Leuchtmittel / LED-Stripe:  
-  - L530 (E27, dimmbar, mehrfarbig)  
-  - L535 (E27, dimmbar, mehrfarbig)  
-  - L630 (GU10, dimmbar, mehrfarbig)  
-  - L900 (LED Stripe, dimmbar, mehrfarbig)
---- 
-### [tapo Stripe Color](Tapo%20Stripe%20Color/README.md)  
-  Leuchtmittel / LED-Stripe:  
-  - L920 (LED Stripe, dimmbar, mehrfarbig, Segmentiert)
-  - L930 (LED Stripe, dimmbar, mehrfarbig, Segmentiert)
---- 
-### [tapo Socket](Tapo%20Socket/README.md)  
-  Zwischenstecker:  
-  - P100 (mini)
-  - P105 (rund)
---- 
-### [tapo Energy Socket](Tapo%20Energy%20Socket/README.md)  
-  Zwischenstecker mit Energiemessung:  
-  - P110 (mini)
-  - P115 (rund)
+### [tapo Light](Tapo%20Light/README.md)
 
-  Weitere Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
-  Hier melden für die integration von weiteren Geräten:  
-  **[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
+Leuchtmittel:  
 
+- L510 (E27, dimmbar)  
+- L520 (E27, dimmbar)  
+- L610 (GU10, dimmbar)
+
+---  
+
+### [tapo Light Color](Tapo%20Light%20Color/README.md)
+
+Leuchtmittel / LED-Stripe:  
+
+- L530 (E27, dimmbar, mehrfarbig)  
+- L535 (E27, dimmbar, mehrfarbig)  
+- L630 (GU10, dimmbar, mehrfarbig)  
+- L900 (LED Stripe, dimmbar, mehrfarbig)
+
+---  
+
+### [tapo Stripe Color](Tapo%20Stripe%20Color/README.md)
+
+Leuchtmittel / LED-Stripe:  
+
+- L920 (LED Stripe, dimmbar, mehrfarbig, Segmentiert)
+- L930 (LED Stripe, dimmbar, mehrfarbig, Segmentiert)
+
+---  
+
+### [tapo Socket](Tapo%20Socket/README.md)
+
+Zwischenstecker:  
+
+- P100 (mini)
+- P105 (rund)
+
+---  
+
+### [tapo Energy Socket](Tapo%20Energy%20Socket/README.md)
+
+Zwischenstecker mit Energiemessung:  
+
+- P110 (mini)
+- P115 (rund)
+
+Weitere Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
+Hier melden für die integration von weiteren Geräten:  
+**[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
 
 ## 3. Hub Geräte Instanzen
 
-### [tapo Hub Device](Tapo%20Hub%20Device/README.md)  
-  aktuell umgesetzt und getestete Geräte:  
-  - KE100 (Heizkörperthermostat)  
-  - T310 (Temperatur- & Feuchtigkeitssensor)  
+### [tapo Hub Device](Tapo%20Hub%20Device/README.md)
 
-  Alle restlichen Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
-  Hier melden für die integration von weiteren Geräten:  
-  **[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
+aktuell umgesetzt und getestete Geräte:  
+
+- KE100 (Heizkörperthermostat)  
+- T310 (Temperatur- & Feuchtigkeitssensor)  
+
+Alle restlichen Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
+Hier melden für die integration von weiteren Geräten:  
+**[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
 
 # 2. Voraussetzungen
 
-- IP-Symcon ab Version 6.1
+- IP-Symcon ab Version 8.1
 
 # 3. Software-Installation
 
-  Über den 'Module-Store' in IPS das Modul 'tapo SmartHome' hinzufügen.  
-   **Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
+Über den 'Module-Store' in IPS das Modul 'tapo SmartHome' hinzufügen.  
+**Bei kommerzieller Nutzung (z.B. als Errichter oder Integrator) wenden Sie sich bitte an den Autor.**  
 ![Module-Store](imgs/install.png)  
 
 # 4. Einrichten der Instanzen in IP-Symcon
@@ -118,54 +142,71 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 
 ## 1. Changelog
 
-Version 1.70:
+**Version 2.00:**  
+
+- Unterstützung für IP-Symcon 8.1 hinzugefügt.  
+- Diverse kleinere Anpassungen und Verbesserungen.
+- Dokumentation aktualisiert.
+- Umstellung von Profile auf Darstellungen.
+
+**Version 1.70:**  
+
 - tapo Stripe Color ergänzt.  
 
-Version 1.70:
- - Smart Hubs werden unterstützt.  
- - Geräte von Smart Hubs ergänzt.  
- - Diverse Netzwerk Geräte ergänzt.  
+**Version 1.65:**  
 
-Version 1.61:
- - P300 Steckdosenleiste ergänzt.  
- - Refactoring der 1.60 um weiterer Geräte und den Smart Hub zu integrieren  
+- Smart Hubs werden unterstützt.  
+- Geräte von Smart Hubs ergänzt.  
+- Diverse Netzwerk Geräte ergänzt.  
+
+**Version 1.61**:  
+
+- P300 Steckdosenleiste ergänzt.  
+- Refactoring der 1.60 um weiterer Geräte und den Smart Hub zu integrieren  
   
-Version 1.60:
- - Discovery Modul zum einfachen auffinden von Geräten im Netzwerk ergänzt  
- - tapo Light Modul ergänzt  
- - Refactoring der 1.50 um weiterer Geräte und den Smart Hub zu integrieren  
+**Version 1.60:**  
 
-Version 1.50:
- - Refactoring der 1.40  
+- Discovery Modul zum einfachen auffinden von Geräten im Netzwerk ergänzt  
+- tapo Light Modul ergänzt  
+- Refactoring der 1.50 um weiterer Geräte und den Smart Hub zu integrieren  
 
-Version 1.40:
- - Refactoring der 1.30  
- - Neu Verbinden überarbeitet  
- - Leseintervall wurde nicht gesetzt, wenn Gerät offline war, somit auch nie ein automatischer Reconnect wenn Gerät online ging  
- - War der Gerätename leer und `Instanz automatisch umbenennen` aktiv, so wurde der Name der Instanz gelöscht und es war ein `Unbenanntes Objekt`  
- - Cookie sollte sich jetzt automatisch verlängern und nicht mehr statisch sein (Errorcode 9999)
+**Version 1.50:**  
 
-Version 1.30:
- - Neue Verschlüsselung wird unterstützt
+- Refactoring der 1.40  
 
-Version 1.20:  
+**Version 1.40:**  
+
+- Refactoring der 1.30  
+- Neu Verbinden überarbeitet  
+- Leseintervall wurde nicht gesetzt, wenn Gerät offline war, somit auch nie ein automatischer Reconnect wenn Gerät online ging  
+- War der Gerätename leer und `Instanz automatisch umbenennen` aktiv, so wurde der Name der Instanz gelöscht und es war ein `Unbenanntes Objekt`  
+- Cookie sollte sich jetzt automatisch verlängern und nicht mehr statisch sein (Errorcode 9999)
+
+**Version 1.30:**  
+
+- Neue Verschlüsselung wird unterstützt
+
+**Version 1.20:**  
+
 - Laufzeit wurde falsch berechnet und nicht als UTC abgelegt  
 - Session Timeout wird abgefangen und ein automatischer reconnect wird versucht
 - Fehlerbehandlung verbessert  
   
-Version 1.10:  
-- Energiemessung von P110 ergänzt    
+**Version 1.10:**  
+
+- Energiemessung von P110 ergänzt  
   
-Version 1.00:  
+**Version 1.00:**  
+
 - Release Version für Symcon 6.1  
 
 ## 2. Spenden
 
   Die Library ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
 
-<a href="https://www.paypal.com/donate?hosted_button_id=G2SLW2MEMQZH2" target="_blank"><img src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif" border="0" /></a>
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](https://paypal.me/Nall4chan)  
 
-[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share) 
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share)  
 
 ## 6. Lizenz
 
