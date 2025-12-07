@@ -33,11 +33,24 @@ namespace {
         public function ApplyChanges(): void
         {
             //Never delete this line!
-            $this->RegisterProfileInteger(\TpLink\VariableProfile::Runtime, '', '', ' minutes', 0, 0, 0);
-            $this->RegisterVariableString(\TpLink\VariableIdentEnergySocket::today_runtime, $this->Translate('Runtime today'));
-            $this->RegisterVariableString(\TpLink\VariableIdentEnergySocket::month_runtime, $this->Translate('Runtime month'));
-            $this->RegisterVariableInteger(\TpLink\VariableIdentEnergySocket::today_runtime_raw, $this->Translate('Runtime today (minutes)'), \TpLink\VariableProfile::Runtime);
-            $this->RegisterVariableInteger(\TpLink\VariableIdentEnergySocket::month_runtime_raw, $this->Translate('Runtime month (minutes)'), \TpLink\VariableProfile::Runtime);
+
+            $this->UnregisterProfile(\TpLink\VariableProfile::Runtime);
+            $this->RegisterVariableInteger(
+                \TpLink\VariableIdentEnergySocket::today_runtime_raw,
+                $this->Translate('Runtime today'),
+                [
+                    \TpLink\PRESENTATION    => VARIABLE_PRESENTATION_DURATION,
+                    'COUNTDOWN_TYPE'        => 0,
+                    'FORMAT'                => 2,
+                    'MILLISECONDS'          => false
+                ]
+            );
+            $this->RegisterVariableInteger(\TpLink\VariableIdentEnergySocket::month_runtime_raw, $this->Translate('Runtime month'), [
+                \TpLink\PRESENTATION    => VARIABLE_PRESENTATION_DURATION,
+                'COUNTDOWN_TYPE'        => 0,
+                'FORMAT'                => 2,
+                'MILLISECONDS'          => false
+            ]);
             $this->RegisterVariableFloat(\TpLink\VariableIdentEnergySocket::today_energy, $this->Translate('Energy today'), '~Electricity.Wh');
             $this->RegisterVariableFloat(\TpLink\VariableIdentEnergySocket::month_energy, $this->Translate('Energy month'), '~Electricity.Wh');
             $this->RegisterVariableFloat(\TpLink\VariableIdentEnergySocket::current_power, $this->Translate('Current power'), '~Watt');
@@ -49,10 +62,8 @@ namespace {
             if (parent::RequestState()) {
                 $Result = $this->GetEnergyUsage();
                 if (is_array($Result)) {
-                    $this->SetValue(\TpLink\VariableIdentEnergySocket::today_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::today_runtime]);
-                    $this->SetValue(\TpLink\VariableIdentEnergySocket::month_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::month_runtime]);
-                    $this->SetValue(\TpLink\VariableIdentEnergySocket::today_runtime, sprintf(gmdate('H \%\s i \%\s', $Result[\TpLink\VariableIdentEnergySocket::today_runtime] * 60), $this->Translate('hours'), $this->Translate('minutes')));
-                    $this->SetValue(\TpLink\VariableIdentEnergySocket::month_runtime, sprintf(gmdate('z \%\s H \%\s i \%\s', $Result[\TpLink\VariableIdentEnergySocket::month_runtime] * 60), $this->Translate('days'), $this->Translate('hours'), $this->Translate('minutes')));
+                    $this->SetValue(\TpLink\VariableIdentEnergySocket::today_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::today_runtime] * 60);
+                    $this->SetValue(\TpLink\VariableIdentEnergySocket::month_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::month_runtime] * 60);
                     $this->SetValue(\TpLink\VariableIdentEnergySocket::today_energy, $Result[\TpLink\VariableIdentEnergySocket::today_energy]);
                     $this->SetValue(\TpLink\VariableIdentEnergySocket::month_energy, $Result[\TpLink\VariableIdentEnergySocket::month_energy]);
                     $this->SetValue(\TpLink\VariableIdentEnergySocket::current_power, ($Result[\TpLink\VariableIdentEnergySocket::current_power] / 1000));

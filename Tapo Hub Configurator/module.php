@@ -124,11 +124,7 @@ class TapoHubConfigurator extends IPSModuleStrict
 
     private function FilterInstances(int $InstanceID): bool
     {
-        $Instance = IPS_GetInstance($InstanceID);
-        if ($Instance['ModuleInfo']['ModuleID'] == \TpLink\GUID::HubConfigurator) {
-            return false;
-        }
-        return $Instance['ConnectionID'] == $this->ParentID;
+        return IPS_GetInstance($InstanceID)['ConnectionID'] == $this->ParentID;
     }
 
     private function GetInstanceList(): array
@@ -137,11 +133,11 @@ class TapoHubConfigurator extends IPSModuleStrict
         if ($this->ParentID == 0) {
             return [];
         }
-        $AllInstancesOfParent = array_flip(array_filter(IPS_GetInstanceList(), [$this, 'FilterInstances']));
+        $AllInstancesOfParent = array_flip(array_filter(IPS_GetInstanceListByModuleID(\TpLink\GUID::HubChild), [$this, 'FilterInstances']));
         foreach ($AllInstancesOfParent as $key => &$value) {
             $value = [
-                'moduleID'                   => IPS_GetInstance($key)['ModuleInfo']['ModuleID'],
-                \TpLink\Api\Result::DeviceID => IPS_GetProperty($key, \TpLink\Property::DeviceId)
+                'moduleID'                   => \TpLink\GUID::HubChild,
+                \TpLink\Property::DeviceId   => IPS_GetProperty($key, \TpLink\Property::DeviceId)
             ];
         }
         return $AllInstancesOfParent;

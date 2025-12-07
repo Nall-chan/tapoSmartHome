@@ -17,6 +17,7 @@ namespace {
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/BufferHelper.php') . '}');
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/DebugHelper.php') . '}');
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/SemaphoreHelper.php') . '}');
+    eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/VariableHelper.php') . '}');
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/VariableProfileHelper.php') . '}');
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/AttributeArrayHelper.php') . '}');
     require_once 'TapoCrypt.php';
@@ -49,8 +50,6 @@ namespace TpLink
      * @method void RegisterAttributeArray(string $Name, array $Value, int $Size = 0)
      * @method array ReadAttributeArray(string $Name)
      * @method void WriteAttributeArray(string $Name, array $Value)
-     * @method void RegisterProfileInteger(string $Name, string $Icon, string $Prefix, string $Suffix, int $MinValue, int $MaxValue, float $StepSize)
-     * @method void RegisterProfileStringEx(string $Name, string $Icon, string $Prefix, string $Suffix, array $Associations)
      * @method void UnregisterProfile(string $Name)
      * @method bool SendDebug(string $Message, mixed $Data, int $Format)
      */
@@ -59,13 +58,14 @@ namespace TpLink
         use \Tapo\BufferHelper;
         use \Tapo\DebugHelper;
         use \Tapo\Semaphore;
+        use \Tapo\VariableHelper;
         use \Tapo\VariableProfileHelper;
         use \Tapo\AttributeArrayHelper;
         use Crypt\Klap;
         use Crypt\SecurePassthroug;
 
         protected static $ModuleIdents = [];
-
+        protected $TranslationCache = [];
         public function Create(): void
         {
             //Never delete this line!
@@ -95,7 +95,7 @@ namespace TpLink
             //Never delete this line!
             parent::ApplyChanges();
 
-            $this->RegisterProfileInteger(\TpLink\VariableProfile::RuntimeSeconds, '', '', ' seconds', 0, 0, 0);
+            $this->UnregisterProfile(\TpLink\VariableProfile::RuntimeSeconds);
             $this->SetTimerInterval(\TpLink\Timer::RequestState, 0);
             $this->SetSummary($this->ReadPropertyString(\TpLink\Property::Host));
             $this->InitBuffers();
@@ -143,7 +143,11 @@ namespace TpLink
 
         public function Translate(string $Text): string
         {
-            $translation = json_decode(file_get_contents(__DIR__ . '/locale.json'), true);
+            if (count($this->TranslationCache)) {
+                $translation = $this->TranslationCache;
+            } else {
+                $this->TranslationCache = $translation = json_decode(file_get_contents(__DIR__ . '/locale.json'), true);
+            }
             $language = IPS_GetSystemLanguage();
             $code = explode('_', $language)[0];
             if (isset($translation['translations'])) {
@@ -236,6 +240,40 @@ namespace TpLink
             return $Response;
         }
 
+        protected function TranslatePresentation(array $Presentation): array
+        {
+
+            if (isset($Presentation['PREFIX'])) {
+                $Presentation['PREFIX'] = $this->Translate($Presentation['PREFIX']);
+            }
+            if (isset($Presentation['SUFFIX'])) {
+                $Presentation['SUFFIX'] = $this->Translate($Presentation['SUFFIX']);
+            }
+            if (isset($Presentation['OPTIONS'])) {
+                $Options = $Presentation['OPTIONS'];
+                foreach ($Options as &$Option) {
+                    $Option['Caption'] = $this->Translate($Option['Caption']);
+                }
+                $Presentation['OPTIONS'] = json_encode($Options);
+            }
+            if (isset($Presentation['INTERVALS'])) {
+                $Intervals = $Presentation['INTERVALS'];
+                foreach ($Intervals as &$Interval) {
+                    if (isset($Interval['ConstantValue'])) {
+                        $Interval['ConstantValue'] = $this->Translate($Interval['ConstantValue']);
+                    }
+                    if (isset($Interval['PrefixValue'])) {
+                        $Interval['PrefixValue'] = $this->Translate($Interval['PrefixValue']);
+                    }
+                    if (isset($Interval['SuffixValue'])) {
+                        $Interval['SuffixValue'] = $this->Translate($Interval['SuffixValue']);
+                    }
+                }
+                $Presentation['INTERVALS'] = json_encode($Intervals);
+            }
+            return $Presentation;
+        }
+
         protected function SetVariables(array $Values): void
         {
             $NamePrefix = '';
@@ -257,11 +295,16 @@ namespace TpLink
                         continue;
                     }
                 }
+                if (array_key_exists(\TpLink\IPSVarPresentationFunction, $VarParams)) {
+                    $Presentation = $this->{$VarParams[\TpLink\IPSVarPresentationFunction]}();
+                } else {
+                    $Presentation = $this->TranslatePresentation($VarParams[\TpLink\IPSVarPresentation]);
+                }
                 $this->MaintainVariable(
                     $IdentPrefix . $Ident,
                     $NamePrefix . $this->Translate($VarParams[\TpLink\IPSVarName]),
                     $VarParams[\TpLink\IPSVarType],
-                    sprintf($VarParams[\TpLink\IPSVarProfile], $this->InstanceID),
+                    $Presentation,
                     0,
                     true
                 );
@@ -363,14 +406,6 @@ namespace TpLink
             $Values[\TpLink\VariableIdentSocket::auto_off_status] = 'off';
             return $Values;
         }*/
-
-        protected function SecondsToString(array $Values): ?string
-        {
-            if (!isset($Values[\TpLink\VariableIdentSocket::on_time])) {
-                return null;
-            }
-            return sprintf(gmdate('H \%\s i \%\s', $Values[\TpLink\VariableIdentSocket::on_time]), $this->Translate('hours'), $this->Translate('minutes'));
-        }
 
         /**
          * SendRequest
@@ -490,7 +525,6 @@ namespace TpLink
                         restore_error_handler();
                     }
                     return false;
-                    break;
                 case 'KLAP':
                     if ($this->InitKlap()) {
                         if ($this->HandshakeKlap()) {
@@ -499,7 +533,6 @@ namespace TpLink
                         }
                     }
                     return false;
-                    break;
             }
             set_error_handler([$this, 'ModulErrorHandler']);
             trigger_error($this->Translate(\TpLink\Api\Protocol::$ErrorCodes[1003]), E_USER_NOTICE);

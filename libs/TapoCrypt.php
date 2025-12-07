@@ -94,7 +94,7 @@ namespace TpLink\Crypt
 
         public function encrypt(string $data): string
         {
-            $cipher = new \phpseclib\Crypt\AES('cbc');
+            $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
             $cipher->enablePadding();
             $cipher->setIV($this->iv);
             $cipher->setKey($this->key);
@@ -104,7 +104,7 @@ namespace TpLink\Crypt
 
         public function decrypt(string $data): string
         {
-            $cipher = new \phpseclib\Crypt\AES('cbc');
+            $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
             $cipher->enablePadding();
             $cipher->setIV($this->iv);
             $cipher->setKey($this->key);
@@ -240,7 +240,7 @@ namespace TpLink\Crypt
         public function encrypt(string $data): string
         {
             $this->seq++;
-            $cipher = new \phpseclib\Crypt\AES('cbc');
+            $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
             $cipher->enablePadding();
             $cipher->setIV($this->iv . pack('N', $this->seq));
             $cipher->setKey($this->key);
@@ -256,7 +256,7 @@ namespace TpLink\Crypt
 
         public function decrypt(string $data): string
         {
-            $cipher = new \phpseclib\Crypt\AES('cbc');
+            $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
             $cipher->enablePadding();
             $cipher->setIV($this->iv . pack('N', $this->seq));
             $cipher->setKey($this->key);

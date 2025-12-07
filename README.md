@@ -148,6 +148,7 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 - Diverse kleinere Anpassungen und Verbesserungen.
 - Dokumentation aktualisiert.
 - Umstellung von Profile auf Darstellungen.
+- Hub Konfigurator war nicht mehr funktionsfähig, da Filterung der Instanzen nicht korrekt war.
 
 **Version 1.70:**  
 

@@ -16,7 +16,7 @@ require_once dirname(__DIR__) . '/libs/TapoLib.php';
  * @version       1.70
  *
  * @method bool SendDebug(string $Message, mixed $Data, int $Format)
- * @method void RegisterProfileFloat(string $Name, string $Icon, string $Prefix, string $Suffix, float $MinValue, float $MaxValue, float $StepSize, int $Digits)
+ * @method void UnregisterProfile(string $Name)
  */
 class TapoHubDevice extends IPSModuleStrict
 {
@@ -42,7 +42,7 @@ class TapoHubDevice extends IPSModuleStrict
         //Never delete this line!
         parent::ApplyChanges();
 
-        $this->RegisterProfileFloat(\TpLink\VariableProfile::TargetTemperature, 'Temperature', '', ' °C', 5, 30, 0.5, 1);
+        $this->UnregisterProfile(\TpLink\VariableProfile::TargetTemperature);
 
         $DeviceId = $this->ReadPropertyString(\TpLink\Property::DeviceId);
         if ($DeviceId) {
@@ -168,7 +168,7 @@ class TapoHubDevice extends IPSModuleStrict
                 $Ident,
                 $this->Translate($VarParams[\TpLink\IPSVarName]),
                 $VarParams[\TpLink\IPSVarType],
-                $VarParams[\TpLink\IPSVarProfile],
+                $this->TranslatePresentation($VarParams[\TpLink\IPSVarPresentation]),
                 0,
                 true
             );
@@ -177,6 +177,40 @@ class TapoHubDevice extends IPSModuleStrict
             }
             $this->SetValue($Ident, $Values[$Ident]);
         }
+    }
+
+    protected function TranslatePresentation(array $Presentation): array
+    {
+
+        if (isset($Presentation['PREFIX'])) {
+            $Presentation['PREFIX'] = $this->Translate($Presentation['PREFIX']);
+        }
+        if (isset($Presentation['SUFFIX'])) {
+            $Presentation['SUFFIX'] = $this->Translate($Presentation['SUFFIX']);
+        }
+        if (isset($Presentation['OPTIONS'])) {
+            $Options = $Presentation['OPTIONS'];
+            foreach ($Options as &$Option) {
+                $Option['Caption'] = $this->Translate($Option['Caption']);
+            }
+            $Presentation['OPTIONS'] = json_encode($Options);
+        }
+        if (isset($Presentation['INTERVALS'])) {
+            $Intervals = $Presentation['INTERVALS'];
+            foreach ($Intervals as &$Interval) {
+                if (isset($Interval['ConstantValue'])) {
+                    $Interval['ConstantValue'] = $this->Translate($Interval['ConstantValue']);
+                }
+                if (isset($Interval['PrefixValue'])) {
+                    $Interval['PrefixValue'] = $this->Translate($Interval['PrefixValue']);
+                }
+                if (isset($Interval['SuffixValue'])) {
+                    $Interval['SuffixValue'] = $this->Translate($Interval['SuffixValue']);
+                }
+            }
+            $Presentation['INTERVALS'] = json_encode($Intervals);
+        }
+        return $Presentation;
     }
 
     private function ModulErrorHandler(int $errno, string $errstr): bool

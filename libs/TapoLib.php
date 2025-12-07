@@ -169,7 +169,9 @@ namespace TpLink
 {
     const IPSVarName = 'IPSVarName';
     const IPSVarType = 'IPSVarType';
-    const IPSVarProfile = 'IPSVarProfile';
+    const IPSVarPresentationFunction = 'IPSVarPresentationFunction';
+    const IPSVarPresentation = 'IPSVarPresentation';
+    const PRESENTATION = 'PRESENTATION';
     const HasAction = 'HasAction';
     const ReceiveFunction = 'ReceiveFunction';
     const SendFunction = 'SendFunction';
@@ -351,9 +353,11 @@ namespace TpLink
 
         public static $Variables = [
             self::device_on=> [
-                IPSVarName   => 'State',
-                IPSVarType   => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile=> VariableProfile::Switch,
+                IPSVarName        => 'State',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION => VARIABLE_PRESENTATION_SWITCH
+                ],
                 HasAction    => true
             ]
         ];
@@ -365,9 +369,46 @@ namespace TpLink
 
         public static $Variables = [
             self::overheated=> [
-                IPSVarName   => 'Overheated',
-                IPSVarType   => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile=> VariableProfile::Overheated,
+                IPSVarName        => 'Overheated',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION    => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'COLOR'         => -1,
+                    'ICON'          => '',
+                    'CONTENT_COLOR' => -1,
+                    'DISPLAY_TYPE'  => 0,
+                    'OPTIONS'       => [
+                        [
+                            'ColorDisplay'       => -1,
+                            'ContentColorDisplay'=> -1,
+                            'Value'              => false,
+                            'Caption'            => 'OK',
+                            'IconActive'         => false,
+                            'IconValue'          => '',
+                            'ColorActive'        => true,
+                            'ColorValue'         => -1,
+                            'Color'              => -1,
+                            'ContentColorActive' => false,
+                            'ContentColor'       => -1
+                        ],
+                        [
+                            'ColorDisplay'       => 16711680,
+                            'ContentColorDisplay'=> -1,
+                            'Value'              => true,
+                            'Caption'            => 'Alarm',
+                            'IconActive'         => true,
+                            'IconValue'          => 'Warning',
+                            'ColorActive'        => true,
+                            'ColorValue'         => 16711680,
+                            'ContentColorActive' => false,
+                            'ContentColorValue'  => -1,
+                            'Color'              => -1,
+                            'ContentColor'       => -1
+                        ]
+                    ],
+                    'PREVIEW_STYLE' => 1,
+                    'SHOW_PREVIEW'  => true
+                ],
                 HasAction    => false
             ]
         ];
@@ -382,31 +423,29 @@ namespace TpLink
 
         public static $Variables = [
             self::on_time=> [
-                IPSVarName   => 'On time (seconds)',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::RuntimeSeconds,
+                IPSVarName        => 'On time (seconds)',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION     => VARIABLE_PRESENTATION_DURATION,
+                    'COUNTDOWN_TYPE' => 0,
+                    'FORMAT'         => 2,
+                    'MILLISECONDS'   => false
+                ],
                 HasAction    => false
-            ],
-            self::on_time_string=> [
-                IPSVarName     => 'On time',
-                IPSVarType     => VARIABLETYPE_STRING,
-                IPSVarProfile  => '',
-                ReceiveFunction=> 'SecondsToString',
-                HasAction      => false
             ],
             /* todo
              Zeitschaltuhr zum ausschalten. Aber das ist nur der Status, Schalten fehlt noch der API Befehl :(
             self::auto_off_status=> [
                 IPSVarName   => 'Auto off',
                 IPSVarType   => VARIABLETYPE_STRING,
-                IPSVarProfile=> '',
+                IPSVarPresentation=> [],
                 SendFunction => 'SetAutOff',
                 HasAction    => true
             ],
             self::auto_off_remain_time=> [
                 IPSVarName   => 'Remain time to off',
                 IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::UnixTimestampTime,
+                IPSVarPresentation => [],
                 HasAction    => true
             ],*/
         ];
@@ -418,10 +457,10 @@ namespace TpLink
 
         public static $Variables = [
             self::rssi => [
-                IPSVarName              => 'Rssi',
-                IPSVarType              => VARIABLETYPE_INTEGER,
-                IPSVarProfile           => '',
-                HasAction               => false
+                IPSVarName                   => 'Rssi',
+                IPSVarType                   => VARIABLETYPE_INTEGER,
+                IPSVarPresentation           => [],
+                HasAction                    => false
             ]
         ];
     }
@@ -432,9 +471,26 @@ namespace TpLink
 
         public static $Variables = [
             self::brightness=> [
-                IPSVarName   => 'Brightness',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::Brightness,
+                IPSVarName        => 'Brightness',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION          => VARIABLE_PRESENTATION_SLIDER,
+                    'DIGITS'              => 0,
+                    'CUSTOM_GRADIENT'     => '[]',
+                    'ICON'                => 'brightness',
+                    'DECIMAL_SEPARATOR'   => '',
+                    'GRADIENT_TYPE'       => 0,
+                    'MAX'                 => 100,
+                    'INTERVALS'           => [],
+                    'INTERVALS_ACTIVE'    => false,
+                    'MIN'                 => 1,
+                    'PERCENTAGE'          => false,
+                    'PREFIX'              => '',
+                    'STEP_SIZE'           => 1,
+                    'SUFFIX'              => ' %',
+                    'THOUSANDS_SEPARATOR' => '',
+                    'USAGE_TYPE'          => 2,
+                ],
                 HasAction    => true
             ]
         ];
@@ -445,9 +501,14 @@ namespace TpLink
 
         public static $Variables = [
             self::color_temp=> [
-                IPSVarName   => 'Color temp',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::ColorTemp,
+                IPSVarName        => 'Color temp',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION         => VARIABLE_PRESENTATION_SLIDER,
+                    'TEMPLATE'           => VARIABLE_TEMPLATE_SLIDER_COLOR_TEMPERATURE,
+                    'MIN'                => 2500,
+                    'MAX'                => 6500,
+                ],
                 HasAction    => true
             ]
         ];
@@ -459,16 +520,36 @@ namespace TpLink
         public const saturation = 'saturation';
         public const dynamic_light_effect_enable = 'dynamic_light_effect_enable';
         public const color_rgb = 'color_rgb';
+        public const hsv = 'hsv';
 
         public static $Variables = [
             self::color_rgb=> [
-                IPSVarName     => 'Color',
-                IPSVarType     => VARIABLETYPE_INTEGER,
-                IPSVarProfile  => VariableProfile::HexColor,
+                IPSVarName        => 'Color RGB',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION      => VARIABLE_PRESENTATION_COLOR,
+                ],
                 HasAction      => true,
                 ReceiveFunction=> 'HSVtoRGB',
                 SendFunction   => 'RGBtoHSV'
             ],
+            self::hsv=> [
+                IPSVarName        => 'Color HSV',
+                IPSVarType        => VARIABLETYPE_STRING,
+                IPSVarPresentation=> [
+                    PRESENTATION         => VARIABLE_PRESENTATION_COLOR,
+                    'COLOR_CURVE'        => 0,
+                    'COLOR_SPACE'        => 1,
+                    'SELECTION'          => 0,
+                    'CUSTOM_COLOR_CURVE' => '[]',
+                    'CUSTOM_COLOR_SPACE' => '[{"x":0.64,"y":0.33},{"x":0.3,"y":0.6},{"x":0.15,"y":0.06},{"x":0.3127,"y":0.329}]',
+                    'ENCODING'           => 2,
+                    'PRESET_VALUES'      => '[{"Color":16007990},{"Color":16761095},{"Color":10233776},{"Color":48340},{"Color":2201331},{"Color":15277667}]'
+                ],
+                HasAction      => true,
+                ReceiveFunction=> 'HSVToVariable',
+                SendFunction   => 'SendHSV'
+            ]
         ];
     }
 
@@ -477,32 +558,76 @@ namespace TpLink
         public const lighting_effect = 'lighting_effect';
         public const brightness = 'brightness'; // Overwrite LightColor
         public const color_rgb = 'color_rgb'; // Overwrite LightColor
+        public const hsv = 'hsv'; // Overwrite LightColor
 
         public static $Variables = [
             self::lighting_effect => [
-                IPSVarName              => 'Effect',
-                IPSVarType              => VARIABLETYPE_STRING,
-                IPSVarProfile           => VariableProfile::LightingEffect,
-                HasAction               => true,
-                ReceiveFunction         => 'LightEffectToVariable',
-                SendFunction            => 'ActivateLightEffect'
+                IPSVarName                => 'Effect',
+                IPSVarType                => VARIABLETYPE_STRING,
+                IPSVarPresentationFunction=> 'GetEffectsForPresentation',
+                IPSVarPresentation        => [
+                    PRESENTATION  => VARIABLE_PRESENTATION_ENUMERATION,
+                    'ICON'        => '',
+                    'LAYOUT'      => 0,
+                    'DISPLAY'     => 0,
+                    'OPTIONS'     => []
+                ],
+                HasAction                 => true,
+                ReceiveFunction           => 'LightEffectToVariable',
+                SendFunction              => 'ActivateLightEffect'
             ],
             self::brightness=> [
                 IPSVarName              => 'Brightness',
                 IPSVarType              => VARIABLETYPE_INTEGER,
-                IPSVarProfile           => VariableProfile::Brightness,
+                IPSVarPresentation      => [
+                    PRESENTATION          => VARIABLE_PRESENTATION_SLIDER,
+                    'DIGITS'              => 0,
+                    'CUSTOM_GRADIENT'     => '[]',
+                    'ICON'                => 'brightness',
+                    'DECIMAL_SEPARATOR'   => '',
+                    'GRADIENT_TYPE'       => 0,
+                    'MAX'                 => 100,
+                    'INTERVALS'           => [],
+                    'INTERVALS_ACTIVE'    => false,
+                    'MIN'                 => 1,
+                    'PERCENTAGE'          => false,
+                    'PREFIX'              => '',
+                    'STEP_SIZE'           => 1,
+                    'SUFFIX'              => ' %',
+                    'THOUSANDS_SEPARATOR' => '',
+                    'USAGE_TYPE'          => 2,
+                ],
                 HasAction               => true,
                 ReceiveFunction         => 'BrightnessToVariable',
                 SendFunction            => 'SendBrightness'
             ],
             self::color_rgb=> [
-                IPSVarName     => 'Color',
-                IPSVarType     => VARIABLETYPE_INTEGER,
-                IPSVarProfile  => VariableProfile::HexColor,
+                IPSVarName        => 'Color RGB',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION      => VARIABLE_PRESENTATION_COLOR,
+                ],
                 HasAction      => true,
                 ReceiveFunction=> 'HSVtoRGB',
                 SendFunction   => 'RGBtoHSV'
             ],
+            self::hsv=> [
+                IPSVarName        => 'Color HSV',
+                IPSVarType        => VARIABLETYPE_STRING,
+                IPSVarPresentation=> [
+                    PRESENTATION         => VARIABLE_PRESENTATION_COLOR,
+                    'COLOR_CURVE'        => 0,
+                    'COLOR_SPACE'        => 1,
+                    'SELECTION'          => 0,
+                    'CUSTOM_COLOR_CURVE' => '[]',
+                    'CUSTOM_COLOR_SPACE' => '[{"x":0.64,"y":0.33},{"x":0.3,"y":0.6},{"x":0.15,"y":0.06},{"x":0.3127,"y":0.329}]',
+                    'ENCODING'           => 2,
+                    'PRESET_VALUES'      => '[{"Color":16007990},{"Color":16761095},{"Color":10233776},{"Color":48340},{"Color":2201331},{"Color":15277667}]'
+                ],
+                HasAction      => true,
+                ReceiveFunction=> 'HSVToVariable',
+                SendFunction   => 'SendHSV'
+            ]
         ];
     }
 
@@ -512,10 +637,10 @@ namespace TpLink
 
         public static $Variables = [
             self::status => [
-                IPSVarName              => 'Online status',
-                IPSVarType              => VARIABLETYPE_STRING,
-                IPSVarProfile           => '',
-                HasAction               => false
+                IPSVarName                   => 'Online status',
+                IPSVarType                   => VARIABLETYPE_STRING,
+                IPSVarPresentation           => [],
+                HasAction                    => false
             ]
         ];
     }
@@ -526,9 +651,25 @@ namespace TpLink
 
         public static $Variables = [
             self::current_humidity=> [
-                IPSVarName   => 'Current humidity',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::Humidity,
+                IPSVarName        => 'Current humidity',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION          => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'COLOR'               => -1,
+                    'DECIMAL_SEPARATOR'   => '',
+                    'DIGITS'              => 0,
+                    'ICON'                => 'droplet-degree',
+                    'INTERVALS'           => [],
+                    'INTERVALS_ACTIVE'    => false,
+                    'MAX'                 => 100,
+                    'MIN'                 => 0,
+                    'MULTILINE'           => false,
+                    'PERCENTAGE'          => true,
+                    'PREFIX'              => '',
+                    'SUFFIX'              => ' %',
+                    'THOUSANDS_SEPARATOR' => '',
+                    'USAGE_TYPE'          => 0,
+                ],
                 HasAction    => false
             ]
         ];
@@ -540,9 +681,12 @@ namespace TpLink
 
         public static $Variables = [
             self::current_temp=> [
-                IPSVarName   => 'Current temperature',
-                IPSVarType   => VARIABLETYPE_FLOAT,
-                IPSVarProfile=> VariableProfile::Temperature,
+                IPSVarName         => 'Current temperature',
+                IPSVarType         => VARIABLETYPE_FLOAT,
+                IPSVarPresentation => [
+                    PRESENTATION   => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'TEMPLATE'     => VARIABLE_TEMPLATE_VALUE_PRESENTATION_ROOM_TEMPERATURE
+                ],
                 HasAction    => false
             ]
         ];
@@ -555,15 +699,57 @@ namespace TpLink
 
         public static $Variables = [
             self::at_low_battery=> [
-                IPSVarName   => 'Low battery',
-                IPSVarType   => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile=> VariableProfile::BatteryLow,
+                IPSVarName        => 'Low battery',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION            => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'MIN'                   => 0,
+                    'DIGITS'                => 0,
+                    'MULTILINE'             => false,
+                    'ICON'                  => 'Battery',
+                    'INTERVALS_ACTIVE'      => true,
+                    'MAX'                   => 1,
+                    'PERCENTAGE'            => false,
+                    'OPTIONS'               => [
+                        [
+                            'Value'      => false,
+                            'Caption'    => 'OK',
+                            'IconActive' => false,
+                            'IconValue'  => '',
+                            'ColorActive'=> true,
+                            'ColorValue' => -1],
+                        [
+                            'Value'      => true,
+                            'Caption'    => 'Low battery',
+                            'IconActive' => false,
+                            'IconValue'  => '',
+                            'ColorActive'=> true,
+                            'ColorValue' => 16711680
+                        ]
+                    ],
+                    'PREFIX'                => '',
+                    'SUFFIX'                => '',
+                    'USAGE_TYPE'            => 0,
+                ],
                 HasAction    => false
             ],
             self::battery_percentage=> [
-                IPSVarName   => 'Battery',
-                IPSVarType   => VARIABLETYPE_INTEGER,
-                IPSVarProfile=> VariableProfile::Battery,
+                IPSVarName        => 'Battery',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION       => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'MIN'              => 0,
+                    'DIGITS'           => 0,
+                    'MULTILINE'        => false,
+                    'ICON'             => 'Battery',
+                    'MAX'              => 100,
+                    'INTERVALS'        => [],
+                    'INTERVALS_ACTIVE' => false,
+                    'PERCENTAGE'       => true,
+                    'PREFIX'           => '',
+                    'SUFFIX'           => ' %',
+                    'USAGE_TYPE'       => 0
+                ],
                 HasAction    => false
             ]
         ];
@@ -578,29 +764,50 @@ namespace TpLink
 
         public static $Variables = [
             self::target_temp=> [
-                IPSVarName   => 'Setpoint temperature',
-                IPSVarType   => VARIABLETYPE_FLOAT,
-                IPSVarProfile=> VariableProfile::TargetTemperature,
-                HasAction    => true
+                IPSVarName        => 'Setpoint temperature',
+                IPSVarType        => VARIABLETYPE_FLOAT,
+                IPSVarPresentation=> [
+                    'PRESENTATION'        => VARIABLE_PRESENTATION_SLIDER,
+                    'DIGITS'              => 1,
+                    'CUSTOM_GRADIENT'     => '[]',
+                    'ICON'                => 'temperature-half',
+                    'DECIMAL_SEPARATOR'   => 'Client',
+                    'GRADIENT_TYPE'       => 1,
+                    'MAX'                 => 30,
+                    'INTERVALS'           => [],
+                    'INTERVALS_ACTIVE'    => false,
+                    'MIN'                 => 5,
+                    'PERCENTAGE'          => false,
+                    'PREFIX'              => '',
+                    'STEP_SIZE'           => 0.5,
+                    'SUFFIX'              => ' °C',
+                    'THOUSANDS_SEPARATOR' => '',
+                    'USAGE_TYPE'          => 0,
+                ],
+                HasAction         => true
             ],
             self::frost_protection_on=> [
-                IPSVarName     => 'Frost protection',
-                IPSVarType     => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile  => VariableProfile::Switch,
+                IPSVarName        => 'Frost protection',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION => VARIABLE_PRESENTATION_SWITCH
+                ],
                 HasAction      => true
             ],
             self::child_protection=> [
-                IPSVarName     => 'Child Protection',
-                IPSVarType     => VARIABLETYPE_BOOLEAN,
-                IPSVarProfile  => VariableProfile::Switch,
+                IPSVarName        => 'Child Protection',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION => VARIABLE_PRESENTATION_SWITCH
+                ],
                 HasAction      => true
             ],
             self::trv_states=> [
-                IPSVarName     => 'State',
-                IPSVarType     => VARIABLETYPE_STRING,
-                IPSVarProfile  => '',
-                HasAction      => false,
-                ReceiveFunction=> 'TrvStateToString',
+                IPSVarName          => 'State',
+                IPSVarType          => VARIABLETYPE_STRING,
+                IPSVarPresentation  => [],
+                HasAction           => false,
+                ReceiveFunction     => 'TrvStateToString',
             ],
 
         ];
@@ -629,15 +836,7 @@ namespace TpLink
         public const ColorTemp = 'Tapo.ColorTemp';
         public const Brightness = 'Tapo.Brightness';
         public const LightingEffect = 'Tapo.LightingEffect.%d';
-        public const Switch = '~Switch';
-        public const Overheated = '~Alert';
-        public const HexColor = '~HexColor';
-        public const UnixTimestampTime = '~UnixTimestampTime';
         public const TargetTemperature = 'Tapo.Temperature.Room';
-        public const Temperature = '~Temperature';
-        public const Humidity = '~Humidity';
-        public const Battery = '~Battery.100';
-        public const BatteryLow = '~Battery';
     }
 
     class KelvinTable

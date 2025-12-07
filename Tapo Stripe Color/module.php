@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use const TpLink\IPSVarProfile;
-use const TpLink\IPSVarType;
-
 require_once dirname(__DIR__) . '/Tapo Light Color/module.php';
 
 /**
@@ -18,6 +15,7 @@ require_once dirname(__DIR__) . '/Tapo Light Color/module.php';
  * @version       1.70
  *
  * @property array $LastEffect
+ * @method int FindIDForIdent(string $Ident)
  */
 class TapoStripeColor extends TapoLightColor
 {
@@ -47,23 +45,26 @@ class TapoStripeColor extends TapoLightColor
 
     public function ApplyChanges(): void
     {
+        $this->UnregisterProfile(sprintf(\TpLink\VariableProfile::LightingEffect, $this->InstanceID));
         $OldEffects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
         $NewEffects = [];
         foreach (json_decode($this->ReadPropertyString(\TpLink\Property::LightEffectsEnabled), true) as $Effect) {
-            if ($Effect['enable']) {
-                $ProfileEffects[] = [$Effect['id'], $Effect['name'], '', -1];
-            }
             $Index = array_search($Effect['id'], array_column($OldEffects, 'id'));
             if ($Index !== false) {
                 $NewEffects[] = $OldEffects[$Index];
             }
         }
         $this->WriteAttributeArray(\TpLink\Attribute::LightEffects, $NewEffects);
-        $EffectsProfileName = sprintf(\TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][IPSVarProfile], $this->InstanceID);
-        $this->UnregisterProfile($EffectsProfileName);
-        $this->SendDebug('profile', $ProfileEffects, 0);
-        $this->RegisterProfileStringEx($EffectsProfileName, '', '', '', $ProfileEffects);
         $this->LastEffect = [];
+        $this->MaintainVariable(
+            \TpLink\VariableIdentLightEffect::lighting_effect,
+            $this->Translate(\TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarName]),
+            \TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarType],
+            $this->GetEffectsForPresentation(),
+            0,
+            true
+        );
+
         //Never delete this line!
         parent::ApplyChanges();
     }
@@ -99,6 +100,26 @@ class TapoStripeColor extends TapoLightColor
         parent::RequestAction($Ident, $Value);
     }
 
+    protected function GetEffectsForPresentation(): array
+    {
+        $Presentation = \TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarPresentation];
+        $Options = [];
+        foreach (json_decode($this->ReadPropertyString(\TpLink\Property::LightEffectsEnabled), true) as $Effect) {
+            if ($Effect['enable']) {
+                $Options[] = [
+                    'Value'     => $Effect['id'],
+                    'Caption'   => $Effect['name'],
+                    'IconActive'=> false,
+                    'IconValue' => '',
+                    'Color'     => -1
+                ];
+
+            }
+        }
+        $Presentation['OPTIONS'] = json_encode($Options);
+        return $Presentation;
+    }
+
     /**
      * LightEffectToVariable ReceiveFunction
      *
@@ -107,33 +128,28 @@ class TapoStripeColor extends TapoLightColor
      */
     protected function LightEffectToVariable(array $Values): ?string
     {
-        $enabled = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0;
-        $effectId = '';
-        if ($enabled) {
+        if ($Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0) {
             $effectId = $Values['default_states']['state'][\TpLink\VariableIdentLightEffect::lighting_effect]['id'] ?? '';
         } else {
             $this->LastEffect = [];
+            return '';
         }
         /*$enabled = $Values['segment_effect']['enable'] ?? 0;
         if ($enabled){
             return $Values['default_states']['state']['segment_effect']['id'] ?? '';
         }*/
-        $UpdateEffect = true;
-        if (@$this->GetIDForIdent(\TpLink\VariableIdentLightEffect::lighting_effect)) {
+
+        if ($this->FindIDForIdent(\TpLink\VariableIdentLightEffect::lighting_effect)) {
             if ($this->GetValue(\TpLink\VariableIdentLightEffect::lighting_effect) == $effectId) {
-                $UpdateEffect = false;
+                return null;
             }
         }
-        if ($UpdateEffect) {
-            if ($enabled) {
-                $this->LastEffect = $Values['default_states']['state'][\TpLink\VariableIdentLightEffect::lighting_effect];
-                if ($effectId) {
-                    $this->UpdateEffectById($effectId, $Values['default_states']['state'][\TpLink\VariableIdentLightEffect::lighting_effect]);
-                }
-            }
-            return $effectId;
+        $this->LastEffect = $Values['default_states']['state'][\TpLink\VariableIdentLightEffect::lighting_effect];
+        if ($effectId) {
+            $this->UpdateEffectById($effectId, $Values['default_states']['state'][\TpLink\VariableIdentLightEffect::lighting_effect]);
         }
-        return null;
+
+        return $effectId;
     }
 
     /**
@@ -151,6 +167,7 @@ class TapoStripeColor extends TapoLightColor
             return $Values[\TpLink\VariableIdentLight::brightness];
         }
     }
+
     /**
      * HSVtoRGB ReceiveFunction
      *
@@ -167,9 +184,28 @@ class TapoStripeColor extends TapoLightColor
             $Values[\TpLink\VariableIdentLightColor::saturation] = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['display_colors'][0][1];
             $Values[\TpLink\VariableIdentLight::brightness] = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['display_colors'][0][2];
         }
-
         return parent::HSVtoRGB($Values);
     }
+
+    /**
+     * HSVToVariable ReceiveFunction
+     *
+     * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
+     *
+     * @param  array $Values
+     * @return string (JSON encoded)
+     */
+    protected function HSVToVariable(array $Values): string
+    {
+        $enabled = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['enable'] ?? 0;
+        if ($enabled) {
+            $Values[\TpLink\VariableIdentLightColor::hue] = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['display_colors'][0][0];
+            $Values[\TpLink\VariableIdentLightColor::saturation] = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['display_colors'][0][1];
+            $Values[\TpLink\VariableIdentLight::brightness] = $Values[\TpLink\VariableIdentLightEffect::lighting_effect]['display_colors'][0][2];
+        }
+        return parent::HSVToVariable($Values);
+    }
+
     /**
      * ActivateLightEffect SendFunction
      *
@@ -188,6 +224,7 @@ class TapoStripeColor extends TapoLightColor
             return false;
         }
         $this->LastEffect = $Effect;
+        $this->UpdateEffectById($id, $Effect);
         $this->SetValue(\TpLink\VariableIdentLightEffect::lighting_effect, $id);
         return true;
     }
@@ -232,8 +269,35 @@ class TapoStripeColor extends TapoLightColor
             $Effects[$Index] = $Effect;
         }
         $this->WriteAttributeArray(\TpLink\Attribute::LightEffects, $Effects);
-        $EffectsProfileName = sprintf(\TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][IPSVarProfile], $this->InstanceID);
-        IPS_SetVariableProfileAssociation($EffectsProfileName, $id, $Effect['name'], '', -1);
+
+        $Presentation = \TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarPresentation];
+        $Options = [];
+        $UpdatePresentation = false;
+        foreach (json_decode($this->ReadPropertyString(\TpLink\Property::LightEffectsEnabled), true) as $EffectOptions) {
+            if (($EffectOptions['id'] == $id && !$EffectOptions['enable']) || ($EffectOptions['id'] == $id && $EffectOptions['name'] != $this->Translate($Effect['name']))) {
+                $UpdatePresentation = true;
+            }
+            if ($EffectOptions['enable'] || $EffectOptions['id'] == $id) {
+                $Options[] = [
+                    'Value'     => $EffectOptions['id'],
+                    'Caption'   => ($EffectOptions['id'] == $id) ? $this->Translate($Effect['name']) : $EffectOptions['name'],
+                    'IconActive'=> false,
+                    'IconValue' => '',
+                    'Color'     => -1
+                ];
+            }
+        }
+        $Presentation['OPTIONS'] = json_encode($Options);
+        if ($UpdatePresentation) {
+            $this->MaintainVariable(
+                \TpLink\VariableIdentLightEffect::lighting_effect,
+                $this->Translate(\TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarName]),
+                \TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarType],
+                $Presentation,
+                0,
+                true
+            );
+        }
     }
 
     private function ClearEffects(): void

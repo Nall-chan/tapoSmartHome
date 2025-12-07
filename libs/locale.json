@@ -32,6 +32,8 @@
             "Brightness": "Helligkeit",
             "Color temp": "Farbtemperatur",
             "Color": "Farbe",
+            "Color RGB": "Farbe RGB",
+            "Color HSV": "Farbe HSV",
             "Effect": "Effekt",
             "Bubbling Cauldron": "Sprudelnder Kessel",
             "Candy Cane": "Zuckerstange",

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/libs/TapoDevice.php';
+require_once dirname(__DIR__) . '/Tapo Light/module.php';
 
 /**
  * TapoLightColor Klasse für die Anbindung von mehrfarbigen WiFi Bulbs & Strips.
- * Erweitert \TpLink\Device.
+ * Erweitert TapoLight.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
  * @copyright     2024 Michael Tröger
@@ -14,7 +14,7 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  *
  * @version       1.70
  */
-class TapoLightColor extends \TpLink\Device
+class TapoLightColor extends TapoLight
 {
     protected static $ModuleIdents = [
         \TpLink\VariableIdent\OnOff,
@@ -27,8 +27,7 @@ class TapoLightColor extends \TpLink\Device
 
     public function ApplyChanges(): void
     {
-        $this->RegisterProfileInteger(\TpLink\VariableProfile::Brightness, 'Intensity', '', '%', 1, 100, 1);
-        $this->RegisterProfileInteger(\TpLink\VariableProfile::ColorTemp, '', '', ' K', 2500, 6500, 1);
+        $this->UnregisterProfile(\TpLink\VariableProfile::ColorTemp);
         //Never delete this line!
         parent::ApplyChanges();
     }
@@ -104,14 +103,14 @@ class TapoLightColor extends \TpLink\Device
     }
 
     /**
-     * RGBtoHSV SendFunction
+     * RGBtoHSV SendFunction / conversation for HSVToVariable
      *
      * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
      *
      * @param  int $RGB
      * @return array
      */
-    protected function RGBtoHSV(int $RGB)
+    protected function RGBtoHSV(int $RGB): array
     {
         $Values[\TpLink\VariableIdentLightColorTemp::color_temp] = 0;
         $Values[\TpLink\VariableIdentLightColor::hue] = 0;
@@ -157,5 +156,47 @@ class TapoLightColor extends \TpLink\Device
         $Values[\TpLink\VariableIdentLightColor::saturation] = (int) ($saturation * 100);
         $Values[\TpLink\VariableIdentLight::brightness] = (int) ($value * 100);
         return $Values;
+    }
+
+    /**
+     * HSVToVariable ReceiveFunction
+     *
+     * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
+     *
+     * @param  array $Values
+     * @return string (JSON encoded)
+     */
+    protected function HSVToVariable(array $Values): string
+    {
+
+        $color_temp = $Values[\TpLink\VariableIdentLightColorTemp::color_temp];
+        if ($color_temp > 0) {
+            list($red, $green, $blue) = \TpLink\KelvinTable::ToRGB($color_temp);
+            $Values = $this->RGBtoHSV(($red << 16) ^ ($green << 8) ^ $blue);
+        }
+        return json_encode([
+            'h' => $Values[\TpLink\VariableIdentLightColor::hue],
+            's' => $Values[\TpLink\VariableIdentLightColor::saturation],
+            'v' => $Values[\TpLink\VariableIdentLight::brightness]
+        ]);
+    }
+
+    /**
+     * SendHSV SendFunction
+     *
+     * not static, falls wir doch auf Statusvariablen zurückgreifen müssen
+     *
+     * @param  string $HSV (JSON encoded)
+     * @return array
+     */
+    protected function SendHSV(string $HSV): array
+    {
+        $values = json_decode($HSV, true);
+        return [
+            \TpLink\VariableIdentLightColor::hue            => (int) $values['h'],
+            \TpLink\VariableIdentLightColor::saturation     => (int) $values['s'],
+            \TpLink\VariableIdentLight::brightness          => (int) $values['v'],
+            \TpLink\VariableIdentLightColorTemp::color_temp => 0
+        ];
     }
 }

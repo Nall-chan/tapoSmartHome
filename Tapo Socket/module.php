@@ -13,6 +13,8 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  *
  * @version       1.70
+ *
+ * @method int FindIDForIdent(string $Ident)
  */
 class TapoSocket extends \TpLink\Device
 {
@@ -26,7 +28,7 @@ class TapoSocket extends \TpLink\Device
     public function ApplyChanges(): void
     {
         // Migrate Old 'State' Var to 'device_on' Var
-        $oldVar = @$this->GetIDForIdent('State');
+        $oldVar = $this->FindIDForIdent('State');
         if (IPS_VariableExists($oldVar)) {
             IPS_SetIdent($oldVar, \TpLink\VariableIdentOnOff::device_on);
         }
