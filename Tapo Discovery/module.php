@@ -22,6 +22,12 @@ class TapoDiscovery extends IPSModuleStrict
     use \TapoDiscovery\DebugHelper;
 
     public const DISCOVERY_TIMEOUT = 4;
+
+    /**
+     * Create
+     *
+     * @return void
+     */
     public function Create(): void
     {
         //Never delete this line!
@@ -41,6 +47,11 @@ class TapoDiscovery extends IPSModuleStrict
         }
     }
 
+    /**
+     * GetConfigurationForm
+     *
+     * @return string
+     */
     public function GetConfigurationForm(): string
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -64,6 +75,11 @@ class TapoDiscovery extends IPSModuleStrict
         return json_encode($Form);
     }
 
+    /**
+     * GetDevices
+     *
+     * @return array
+     */
     private function GetDevices(): array
     {
         $Devices = $this->Discover();
@@ -146,6 +162,11 @@ class TapoDiscovery extends IPSModuleStrict
         return $Values;
     }
 
+    /**
+     * Discover
+     *
+     * @return array
+     */
     private function Discover(): array
     {
         $Key = (new \phpseclib\Crypt\RSA())->createKey(1024);
@@ -194,6 +215,11 @@ class TapoDiscovery extends IPSModuleStrict
         return $DevicesData;
     }
 
+    /**
+     * GetIPSInstances
+     *
+     * @return array
+     */
     private function GetIPSInstances(): array
     {
         $Devices = [];

@@ -66,6 +66,12 @@ namespace TpLink
 
         protected static $ModuleIdents = [];
         protected $TranslationCache = [];
+
+        /**
+         * Create
+         *
+         * @return void
+         */
         public function Create(): void
         {
             //Never delete this line!
@@ -84,12 +90,11 @@ namespace TpLink
             $this->ChildIDs = [];
         }
 
-        public function Destroy(): void
-        {
-            //Never delete this line!
-            parent::Destroy();
-        }
-
+        /**
+         * ApplyChanges
+         *
+         * @return void
+         */
         public function ApplyChanges(): void
         {
             //Never delete this line!
@@ -112,6 +117,13 @@ namespace TpLink
             }
         }
 
+        /**
+         * RequestAction
+         *
+         * @param  string $Ident
+         * @param  mixed $Value
+         * @return void
+         */
         public function RequestAction(string $Ident, mixed $Value): void
         {
             $SendIdent = $Ident;
@@ -136,11 +148,22 @@ namespace TpLink
             restore_error_handler();
         }
 
+        /**
+         * GetConfigurationForm
+         *
+         * @return string
+         */
         public function GetConfigurationForm(): string
         {
             return file_get_contents(__DIR__ . '/form.json');
         }
 
+        /**
+         * Translate
+         *
+         * @param  string $Text
+         * @return string
+         */
         public function Translate(string $Text): string
         {
             if (count($this->TranslationCache)) {
@@ -164,6 +187,11 @@ namespace TpLink
             return $Text;
         }
 
+        /**
+         * RequestState
+         *
+         * @return bool
+         */
         public function RequestState(): bool
         {
             $Result = $this->GetDeviceInfo();
@@ -174,56 +202,67 @@ namespace TpLink
             return false;
         }
 
+        /*
+         * GetSysInfo
+         *
+         * @return void
+
         public function GetSysInfo()
         {
-            // ControlChild
-            /*
-            $ChildValue = [\TpLink\VariableIdentOnOff::device_on => false];
-            $ChildRequest = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::SetDeviceInfo, '', $ChildValue);
-            $Values = [
-                'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
-                'requestData'=> $ChildRequest
-            ];
-            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
-             */
+         */
+        // ControlChild
+        /*
+        $ChildValue = [\TpLink\VariableIdentOnOff::device_on => false];
+        $ChildRequest = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::SetDeviceInfo, '', $ChildValue);
+        $Values = [
+            'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
+            'requestData'=> $ChildRequest
+        ];
+        $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
+         */
 
-            // MultipleRequest an Child
-            /*
-            $ChildRequest = ['requests' => [\TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo)]];
-            $Values = [
-                'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
-                'requestData'=>
-                \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::MultipleRequest,'', $ChildRequest)
+        // MultipleRequest an Child
+        /*
+        $ChildRequest = ['requests' => [\TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo)]];
+        $Values = [
+            'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
+            'requestData'=>
+            \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::MultipleRequest,'', $ChildRequest)
 
-            ];
-            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
-             */
+        ];
+        $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
+         */
 
-            /*
-            $ControlChildValues = [
-               'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
-               'requestData'=> \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo)
-            ];
-            $ControlChildRequest1 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, '', $ControlChildValues);
+        /*
+        $ControlChildValues = [
+           'device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101',
+           'requestData'=> \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo)
+        ];
+        $ControlChildRequest1 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, '', $ControlChildValues);
 
-            $ControlChildRequest2 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo, '', ['device_info'  => ['device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101']]);
-            //$ControlChildRequest2 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo, '', ['device_info'  => ['name'=>['basic_info']]]);
-            $Values = [
-               'requests' => [
-                   $ControlChildRequest1,
-                   $ControlChildRequest2]
-            ];
-            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::MultipleRequest, $this->terminalUUID, $Values);
+        $ControlChildRequest2 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo, '', ['device_info'  => ['device_id'  => '8022B958FB2A8894109B291806AE20F12107CD8101']]);
+        //$ControlChildRequest2 = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo, '', ['device_info'  => ['name'=>['basic_info']]]);
+        $Values = [
+           'requests' => [
+               $ControlChildRequest1,
+               $ControlChildRequest2]
+        ];
+        $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::MultipleRequest, $this->terminalUUID, $Values);
 
-            $Request = \TpLink\Api\Protocol::BuildRequest('delete_all_rules', $this->terminalUUID, ['id'=>'C1']);
-            $Request = \TpLink\Api\Protocol::BuildRequest('reboot');
-            //$Request = \TpLink\Api\Protocol::BuildRequest('set_device_info', $this->terminalUUID,  ['set_led_off'=> ['off'=>2]]);
-            $Response = $this->SendRequest($Request);
-            if ($Response === null) {
-               return false;
-            }*/
-        }
+        $Request = \TpLink\Api\Protocol::BuildRequest('delete_all_rules', $this->terminalUUID, ['id'=>'C1']);
+        $Request = \TpLink\Api\Protocol::BuildRequest('reboot');
+        //$Request = \TpLink\Api\Protocol::BuildRequest('set_device_info', $this->terminalUUID,  ['set_led_off'=> ['off'=>2]]);
+        $Response = $this->SendRequest($Request);
+        if ($Response === null) {
+           return false;
+        }*/
+        //}
 
+        /**
+         * GetDeviceInfo
+         *
+         * @return false
+         */
         public function GetDeviceInfo(): false|array
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
@@ -240,6 +279,12 @@ namespace TpLink
             return $Response;
         }
 
+        /**
+         * TranslatePresentation
+         *
+         * @param  array $Presentation
+         * @return array
+         */
         protected function TranslatePresentation(array $Presentation): array
         {
 
@@ -274,6 +319,12 @@ namespace TpLink
             return $Presentation;
         }
 
+        /**
+         * SetVariables
+         *
+         * @param  array $Values
+         * @return void
+         */
         protected function SetVariables(array $Values): void
         {
             $NamePrefix = '';
@@ -315,6 +366,12 @@ namespace TpLink
             }
         }
 
+        /**
+         * SetStatus
+         *
+         * @param  mixed $Status
+         * @return bool
+         */
         protected function SetStatus($Status): bool
         {
             if ($Status != IS_ACTIVE) {
@@ -330,6 +387,12 @@ namespace TpLink
             return true;
         }
 
+        /**
+         * SendInfoVariables
+         *
+         * @param  array $Values
+         * @return bool
+         */
         protected function SendInfoVariables(array $Values): bool
         {
             $SendValues = [];
@@ -366,6 +429,12 @@ namespace TpLink
             return $this->SetDeviceInfo($SendValues);
         }
 
+        /**
+         * SetDeviceInfo
+         *
+         * @param  array $Values
+         * @return bool
+         */
         protected function SetDeviceInfo(array $Values): bool
         {
             if (array_key_exists(\TpLink\api\Result::DeviceID, $Values)) {
@@ -461,6 +530,12 @@ namespace TpLink
             return $Result;
         }
 
+        /**
+         * CurlDebug
+         *
+         * @param  int $HttpCode
+         * @return void
+         */
         protected function CurlDebug(int $HttpCode): void
         {
             switch ($HttpCode) {
@@ -479,12 +554,24 @@ namespace TpLink
             }
         }
 
+        /**
+         * ModulErrorHandler
+         *
+         * @param  int $errno
+         * @param  string $errstr
+         * @return bool
+         */
         protected function ModulErrorHandler(int $errno, string $errstr): bool
         {
             echo $errstr . PHP_EOL;
             return true;
         }
 
+        /**
+         * GetModuleIdents
+         *
+         * @return array
+         */
         private static function GetModuleIdents(): array
         {
             $AllIdents = [];
@@ -495,6 +582,11 @@ namespace TpLink
             return $AllIdents;
         }
 
+        /**
+         * InitBuffers
+         *
+         * @return void
+         */
         private function InitBuffers(): void
         {
             $this->token = '';
@@ -507,6 +599,11 @@ namespace TpLink
             $this->KlapSequenz = null;
         }
 
+        /**
+         * Init
+         *
+         * @return bool
+         */
         private function Init(): bool
         {
             switch ($this->ReadPropertyString(\TpLink\Property::Protocol)) {
@@ -540,6 +637,14 @@ namespace TpLink
             return false;
         }
 
+        /**
+         * CurlRequest
+         *
+         * @param  string $Url
+         * @param  string $Payload
+         * @param  bool $noError
+         * @return false
+         */
         private function CurlRequest(string $Url, string $Payload, bool $noError = false): false|string
         {
             $ch = curl_init();
@@ -566,6 +671,12 @@ namespace TpLink
             return false;
         }
 
+        /**
+         * guidv4
+         *
+         * @param  mixed $data
+         * @return string
+         */
         private static function guidv4($data = null): string
         {
             // Generate 16 bytes (128 bits) of random data or use the data passed into the function.

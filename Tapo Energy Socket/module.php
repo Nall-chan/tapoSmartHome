@@ -30,6 +30,11 @@ namespace {
      */
     class TapoEnergySocket extends TapoSocket
     {
+        /**
+         * ApplyChanges
+         *
+         * @return void
+         */
         public function ApplyChanges(): void
         {
             //Never delete this line!
@@ -57,6 +62,11 @@ namespace {
             parent::ApplyChanges();
         }
 
+        /**
+         * RequestState
+         *
+         * @return bool
+         */
         public function RequestState(): bool
         {
             if (parent::RequestState()) {
@@ -73,6 +83,11 @@ namespace {
             return false;
         }
 
+        /**
+         * GetEnergyUsage
+         *
+         * @return false
+         */
         public function GetEnergyUsage(): false|array
         {
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetEnergyUsage);

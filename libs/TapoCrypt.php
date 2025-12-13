@@ -17,20 +17,40 @@ namespace {
     $AutoLoader = new AutoLoaderTapoPHPSecLib('Crypt/Random');
     $AutoLoader->register();
 
+    /**
+     * AutoLoaderTapoPHPSecLib
+     */
     class AutoLoaderTapoPHPSecLib
     {
         private $namespace;
 
+        /**
+         * __construct
+         *
+         * @param  mixed $namespace
+         * @return void
+         */
         public function __construct($namespace = null)
         {
             $this->namespace = $namespace;
         }
 
+        /**
+         * register
+         *
+         * @return void
+         */
         public function register()
         {
             spl_autoload_register([$this, 'loadClass']);
         }
 
+        /**
+         * loadClass
+         *
+         * @param  mixed $className
+         * @return void
+         */
         public function loadClass($className)
         {
             $LibPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'phpseclib' . DIRECTORY_SEPARATOR;
@@ -46,6 +66,9 @@ namespace TpLink\Crypt
 {
     const Protocol = 'http://';
 
+    /**
+     * Url
+     */
     class Url
     {
         public const App = '/app';
@@ -54,11 +77,17 @@ namespace TpLink\Crypt
         public const KlapRequest = self::App . '/request?';
     }
 
+    /**
+     * Method
+     */
     class Method
     {
         public const SecurePassthrough = 'securePassthrough';
     }
 
+    /**
+     * Protocol
+     */
     class Protocol
     {
         private const Method = 'method';
@@ -66,11 +95,24 @@ namespace TpLink\Crypt
         private const Token = 'token';
         private const Request = 'request';
 
+        /**
+         * GetUrlWithToken
+         *
+         * @param  string $Host
+         * @param  string $Token
+         * @return string
+         */
         public static function GetUrlWithToken(string $Host, string $Token): string
         {
             return Protocol . $Host . Url::App . '?' . http_build_query([self::Token => $Token]);
         }
 
+        /**
+         * BuildSecurePassthroughRequest
+         *
+         * @param  string $EncryptedPayload
+         * @return string
+         */
         public static function BuildSecurePassthroughRequest(string $EncryptedPayload): string
         {
             return json_encode([
@@ -81,17 +123,33 @@ namespace TpLink\Crypt
         }
     }
 
+    /**
+     * Cipher
+     */
     class Cipher
     {
         private $key;
         private $iv;
 
+        /**
+         * __construct
+         *
+         * @param  mixed $key
+         * @param  mixed $iv
+         * @return void
+         */
         public function __construct($key, $iv)
         {
             $this->key = $key;
             $this->iv = $iv;
         }
 
+        /**
+         * encrypt
+         *
+         * @param  string $data
+         * @return string
+         */
         public function encrypt(string $data): string
         {
             $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
@@ -102,6 +160,12 @@ namespace TpLink\Crypt
             return base64_encode($encrypted);
         }
 
+        /**
+         * decrypt
+         *
+         * @param  string $data
+         * @return string
+         */
         public function decrypt(string $data): string
         {
             $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
@@ -115,6 +179,11 @@ namespace TpLink\Crypt
 
     trait SecurePassthroug
     {
+        /**
+         * Handshake
+         *
+         * @return bool|int
+         */
         private function Handshake(): bool|int
         {
             $Key = (new \phpseclib\Crypt\RSA())->createKey(1024);
@@ -144,6 +213,11 @@ namespace TpLink\Crypt
             return true;
         }
 
+        /**
+         * Login
+         *
+         * @return bool
+         */
         private function Login(): bool
         {
             $Url = \TpLink\Crypt\Protocol . $this->ReadPropertyString(\TpLink\Property::Host) . \TpLink\Crypt\Url::App;
@@ -175,6 +249,12 @@ namespace TpLink\Crypt
             return false;
         }
 
+        /**
+         * EncryptedRequest
+         *
+         * @param  string $Payload
+         * @return string
+         */
         private function EncryptedRequest(string $Payload): string
         {
             $Url = \TpLink\Crypt\Protocol::GetUrlWithToken($this->ReadPropertyString(\TpLink\Property::Host), $this->token);
@@ -217,6 +297,9 @@ namespace TpLink\Crypt
         }
     }
 
+    /**
+     * KlapCipher
+     */
     class KlapCipher
     {
         private $key;
@@ -224,6 +307,15 @@ namespace TpLink\Crypt
         private $iv;
         private $sig;
 
+        /**
+         * __construct
+         *
+         * @param  string $lSeed
+         * @param  string $rSeed
+         * @param  string $uHash
+         * @param  int|null $Sequenz
+         * @return void
+         */
         public function __construct(string $lSeed, string $rSeed, string $uHash, ?int $Sequenz)
         {
             $this->key = substr(hash('sha256', 'lsk' . $lSeed . $rSeed . $uHash, true), 0, 16);
@@ -237,6 +329,12 @@ namespace TpLink\Crypt
             $this->iv = substr($iv, 0, 12);
         }
 
+        /**
+         * encrypt
+         *
+         * @param  string $data
+         * @return string
+         */
         public function encrypt(string $data): string
         {
             $this->seq++;
@@ -249,11 +347,22 @@ namespace TpLink\Crypt
             return $signature . $encrypted;
         }
 
+        /**
+         * getSequenz
+         *
+         * @return int
+         */
         public function getSequenz(): int
         {
             return $this->seq;
         }
 
+        /**
+         * decrypt
+         *
+         * @param  string $data
+         * @return string
+         */
         public function decrypt(string $data): string
         {
             $cipher = new \phpseclib\Crypt\AES(\phpseclib\Crypt\Base::MODE_CBC);
@@ -267,12 +376,24 @@ namespace TpLink\Crypt
 
     trait Klap
     {
+        /**
+         * GenerateKlapAuthHash
+         *
+         * @param  string $Username
+         * @param  string $Password
+         * @return string
+         */
         private function GenerateKlapAuthHash(string $Username, string $Password): string
         {
             return hash('sha256', sha1(mb_convert_encoding($Username, 'UTF-8'), true) .
                     sha1(mb_convert_encoding($Password, 'UTF-8'), true), true);
         }
 
+        /**
+         * InitKlap
+         *
+         * @return bool
+         */
         private function InitKlap(): bool
         {
             $UserHash = $this->GenerateKlapAuthHash(
@@ -325,6 +446,11 @@ namespace TpLink\Crypt
             return false;
         }
 
+        /**
+         * HandshakeKlap
+         *
+         * @return bool
+         */
         private function HandshakeKlap(): bool
         {
             $Url = \TpLink\Crypt\Protocol . $this->ReadPropertyString(\TpLink\Property::Host) . \TpLink\Crypt\Url::HandshakeKlap;
@@ -334,6 +460,12 @@ namespace TpLink\Crypt
             return $Result !== false;
         }
 
+        /**
+         * KlapEncryptedRequest
+         *
+         * @param  string $Payload
+         * @return string
+         */
         private function KlapEncryptedRequest(string $Payload): string
         {
             if ($this->KlapLocalSeed === '') {

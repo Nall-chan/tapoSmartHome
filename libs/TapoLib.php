@@ -216,6 +216,12 @@ namespace TpLink
             self::H200        => GUID::HubConfigurator,
         ];
 
+        /**
+         * GetGuidByDeviceModel
+         *
+         * @param  string $Model
+         * @return string
+         */
         public static function GetGuidByDeviceModel(string $Model): string
         {
             $Match = [];
@@ -252,6 +258,12 @@ namespace TpLink
             self::S220  => GUID::HubChild
         ];
 
+        /**
+         * GetGuidByDeviceModel
+         *
+         * @param  string $Model
+         * @return string
+         */
         public static function GetGuidByDeviceModel(string $Model): string
         {
             $Match = [];
@@ -286,6 +298,12 @@ namespace TpLink
             ],
         ];
 
+        /**
+         * GetVariableIdentsByCategory
+         *
+         * @param  string $Category
+         * @return array
+         */
         public static function GetVariableIdentsByCategory(string $Category): array
         {
             $AllIdents = [];
@@ -885,6 +903,12 @@ namespace TpLink
             6500=> [255, 249, 253]
         ];
 
+        /**
+         * ToRGB
+         *
+         * @param  int $Kelvin
+         * @return array
+         */
         public static function ToRGB(int $Kelvin): array
         {
             foreach (self::$Table as $Key => $RGB) {

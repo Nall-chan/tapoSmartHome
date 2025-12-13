@@ -23,6 +23,11 @@ class TapoLight extends \TpLink\Device
         \TpLink\VariableIdent\Light
     ];
 
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         $this->UnregisterProfile(\TpLink\VariableProfile::Brightness);

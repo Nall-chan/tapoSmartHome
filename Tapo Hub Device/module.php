@@ -23,6 +23,11 @@ class TapoHubDevice extends IPSModuleStrict
     use \TapoHubDevice\DebugHelper;
     use \TapoHubDevice\VariableProfileHelper;
 
+    /**
+     * Create
+     *
+     * @return void
+     */
     public function Create(): void
     {
         $this->RegisterPropertyString(\TpLink\Property::DeviceId, '');
@@ -31,12 +36,11 @@ class TapoHubDevice extends IPSModuleStrict
         //Tapo.Temperature.Room
     }
 
-    public function Destroy(): void
-    {
-        //Never delete this line!
-        parent::Destroy();
-    }
-
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         //Never delete this line!
@@ -52,6 +56,12 @@ class TapoHubDevice extends IPSModuleStrict
         }
     }
 
+    /**
+     * ReceiveData
+     *
+     * @param  string $JSONString
+     * @return string
+     */
     public function ReceiveData(string $JSONString): string
     {
         $Data = json_decode($JSONString, true);
@@ -66,6 +76,13 @@ class TapoHubDevice extends IPSModuleStrict
         return '';
     }
 
+    /**
+     * RequestAction
+     *
+     * @param  string $Ident
+     * @param  mixed $Value
+     * @return void
+     */
     public function RequestAction(string $Ident, mixed $Value): void
     {
         $AllIdents = $this->GetModuleIdents();
@@ -83,6 +100,12 @@ class TapoHubDevice extends IPSModuleStrict
         restore_error_handler();
     }
 
+    /**
+     * SendInfoVariables
+     *
+     * @param  array $Values
+     * @return false
+     */
     protected function SendInfoVariables(array $Values): false|array
     {
         $SendValues = [];
@@ -106,6 +129,13 @@ class TapoHubDevice extends IPSModuleStrict
         return $this->SendRequest(\TpLink\Api\Method::SetDeviceInfo, $SendValues);
     }
 
+    /**
+     * SendRequest
+     *
+     * @param  string $Method
+     * @param  array $Params
+     * @return false
+     */
     protected function SendRequest(string $Method, array $Params = []): false|array
     {
         $this->SendDebug('Send Method', $Method, 0);
@@ -135,6 +165,12 @@ class TapoHubDevice extends IPSModuleStrict
         return $Result;
     }
 
+    /**
+     * SetVariables
+     *
+     * @param  array $Values
+     * @return void
+     */
     protected function SetVariables(array $Values): void
     {
         if (array_key_exists(\TpLink\Api\Result::Model, $Values)) {
@@ -179,6 +215,12 @@ class TapoHubDevice extends IPSModuleStrict
         }
     }
 
+    /**
+     * TranslatePresentation
+     *
+     * @param  array $Presentation
+     * @return array
+     */
     protected function TranslatePresentation(array $Presentation): array
     {
 
@@ -213,12 +255,24 @@ class TapoHubDevice extends IPSModuleStrict
         return $Presentation;
     }
 
+    /**
+     * ModulErrorHandler
+     *
+     * @param  int $errno
+     * @param  string $errstr
+     * @return bool
+     */
     private function ModulErrorHandler(int $errno, string $errstr): bool
     {
         echo $errstr . PHP_EOL;
         return true;
     }
 
+    /**
+     * GetModuleIdents
+     *
+     * @return array
+     */
     private function GetModuleIdents(): array
     {
         $Category = $this->ReadAttributeString(\TpLink\Attribute::Category);
@@ -228,6 +282,12 @@ class TapoHubDevice extends IPSModuleStrict
         return \TpLink\HubChildDevicesCategory::GetVariableIdentsByCategory($Category);
     }
 
+    /**
+     * TrvStateToString
+     *
+     * @param  array $Values
+     * @return string
+     */
     private function TrvStateToString(array $Values): string
     {
         $State = array_shift($Values[\TpLink\VariableIdentTrv::trv_states]);

@@ -25,21 +25,28 @@ class TapoSocket extends \TpLink\Device
         \TpLink\VariableIdent\Socket
     ];
 
-    public function ApplyChanges(): void
+    /**
+     * Migrate
+     *
+     * @param  string $JSONData
+     * @return string
+     */
+    public function Migrate(string $JSONData): string
     {
-        // Migrate Old 'State' Var to 'device_on' Var
-        $oldVar = $this->FindIDForIdent('State');
-        if (IPS_VariableExists($oldVar)) {
-            IPS_SetIdent($oldVar, \TpLink\VariableIdentOnOff::device_on);
+        // Migrate Ident 'State' to 'device_on'
+        $Var = $this->FindIDForIdent('State');
+        if (IPS_VariableExists($Var)) {
+            IPS_SetIdent($Var, \TpLink\VariableIdentOnOff::device_on);
         }
-
-        //Never delete this line!
-        parent::ApplyChanges();
-
-        //$this->RegisterVariableBoolean(\TpLink\VariableIdentOnOff::device_on, $this->Translate(\TpLink\VariableIdentOnOff::$Variables[\TpLink\VariableIdentOnOff::device_on][\TpLink\IPSVarName]), '~Switch');
-        //$this->EnableAction(\TpLink\VariableIdentOnOff::device_on);
+        return $JSONData;
     }
 
+    /**
+     * SwitchMode
+     *
+     * @param  bool $State
+     * @return bool
+     */
     public function SwitchMode(bool $State): bool
     {
         if ($this->SetDeviceInfo([\TpLink\VariableIdentOnOff::device_on => $State])) {
@@ -49,6 +56,13 @@ class TapoSocket extends \TpLink\Device
         return false;
     }
 
+    /**
+     * SwitchModeEx
+     *
+     * @param  bool $State
+     * @param  int $Delay
+     * @return bool
+     */
     public function SwitchModeEx(bool $State, int $Delay): bool
     {
         $Params = [

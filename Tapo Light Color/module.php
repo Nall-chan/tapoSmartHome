@@ -25,6 +25,11 @@ class TapoLightColor extends TapoLight
         \TpLink\VariableIdent\LightColor
     ];
 
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         $this->UnregisterProfile(\TpLink\VariableProfile::ColorTemp);

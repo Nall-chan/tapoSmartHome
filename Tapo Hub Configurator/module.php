@@ -22,12 +22,31 @@ class TapoHubConfigurator extends IPSModuleStrict
 
     private int $ParentID;
 
+    /**
+     * Create
+     *
+     * @return void
+     */
     public function Create(): void
     {
         parent::Create();
-        $this->RequireParent('{1EDD1EB2-6885-4D87-BA00-9328D74A85C4}');
     }
 
+    /**
+     * GetCompatibleParents
+     *
+     * @return string
+     */
+    public function GetCompatibleParents(): string
+    {
+        return '{"type": "require", "moduleIDs": ["' . \TpLink\GUID::Hub . '"]}';
+    }
+
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         $this->SetReceiveDataFilter('.*NOTHINGTORECEIVE.*');
@@ -35,6 +54,13 @@ class TapoHubConfigurator extends IPSModuleStrict
         parent::ApplyChanges();
     }
 
+    /**
+     * SendRequest
+     *
+     * @param  string $Method
+     * @param  array $Params
+     * @return array|null
+     */
     public function SendRequest(string $Method, array $Params = []): ?array
     {
         $Ret = $this->SendDataToParent(json_encode(
@@ -53,6 +79,11 @@ class TapoHubConfigurator extends IPSModuleStrict
         return $Result;
     }
 
+    /**
+     * GetConfigurationForm
+     *
+     * @return string
+     */
     public function GetConfigurationForm(): string
     {
         $Form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
@@ -104,6 +135,11 @@ class TapoHubConfigurator extends IPSModuleStrict
         return json_encode($Form);
     }
 
+    /**
+     * GetDevicesFromHub
+     *
+     * @return array
+     */
     private function GetDevicesFromHub(): array
     {
         $Result = $this->SendRequest(\TpLink\Api\Method::GetChildDeviceList);
@@ -122,11 +158,22 @@ class TapoHubConfigurator extends IPSModuleStrict
         return $List;
     }
 
+    /**
+     * FilterInstances
+     *
+     * @param  int $InstanceID
+     * @return bool
+     */
     private function FilterInstances(int $InstanceID): bool
     {
         return IPS_GetInstance($InstanceID)['ConnectionID'] == $this->ParentID;
     }
 
+    /**
+     * GetInstanceList
+     *
+     * @return array
+     */
     private function GetInstanceList(): array
     {
         $this->ParentID = IPS_GetInstance($this->InstanceID)['ConnectionID'];

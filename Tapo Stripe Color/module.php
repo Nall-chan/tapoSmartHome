@@ -28,6 +28,11 @@ class TapoStripeColor extends TapoLightColor
         \TpLink\VariableIdent\LightEffect
     ];
 
+    /**
+     * Create
+     *
+     * @return void
+     */
     public function Create(): void
     {
         parent::Create();
@@ -43,6 +48,11 @@ class TapoStripeColor extends TapoLightColor
         $this->LastEffect = [];
     }
 
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         $this->UnregisterProfile(sprintf(\TpLink\VariableProfile::LightingEffect, $this->InstanceID));
@@ -69,6 +79,11 @@ class TapoStripeColor extends TapoLightColor
         parent::ApplyChanges();
     }
 
+    /**
+     * GetConfigurationForm
+     *
+     * @return string
+     */
     public function GetConfigurationForm(): string
     {
         $Form = json_decode(parent::GetConfigurationForm(), true);
@@ -91,6 +106,13 @@ class TapoStripeColor extends TapoLightColor
         return json_encode($Form);
     }
 
+    /**
+     * RequestAction
+     *
+     * @param  string $Ident
+     * @param  mixed $Value
+     * @return void
+     */
     public function RequestAction(string $Ident, mixed $Value): void
     {
         if ($Ident == 'ClearEffects') {
@@ -100,6 +122,11 @@ class TapoStripeColor extends TapoLightColor
         parent::RequestAction($Ident, $Value);
     }
 
+    /**
+     * GetEffectsForPresentation
+     *
+     * @return array
+     */
     protected function GetEffectsForPresentation(): array
     {
         $Presentation = \TpLink\VariableIdentLightEffect::$Variables[\TpLink\VariableIdentLightEffect::lighting_effect][\TpLink\IPSVarPresentation];
@@ -249,6 +276,12 @@ class TapoStripeColor extends TapoLightColor
         return [\TpLink\VariableIdentLight::brightness => $Brightness];
     }
 
+    /**
+     * GetEffectById
+     *
+     * @param  string $id
+     * @return array
+     */
     private function GetEffectById(string $id): array
     {
         $Effects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
@@ -259,6 +292,13 @@ class TapoStripeColor extends TapoLightColor
         return $Effects[$Index];
     }
 
+    /**
+     * UpdateEffectById
+     *
+     * @param  string $id
+     * @param  array $Effect
+     * @return void
+     */
     private function UpdateEffectById(string $id, array $Effect): void
     {
         $Effects = $this->ReadAttributeArray(\TpLink\Attribute::LightEffects);
@@ -300,6 +340,11 @@ class TapoStripeColor extends TapoLightColor
         }
     }
 
+    /**
+     * ClearEffects
+     *
+     * @return void
+     */
     private function ClearEffects(): void
     {
         $Effects = json_decode(file_get_contents(dirname(__DIR__) . '/libs/effects.json'), true);

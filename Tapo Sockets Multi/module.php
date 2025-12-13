@@ -23,6 +23,11 @@ class TapoMultiSockets extends \TpLink\Device
         \TpLink\VariableIdent\Socket
     ];
 
+    /**
+     * ApplyChanges
+     *
+     * @return void
+     */
     public function ApplyChanges(): void
     {
         //Never delete this line!
@@ -40,6 +45,11 @@ class TapoMultiSockets extends \TpLink\Device
         }
     }
 
+    /**
+     * RequestState
+     *
+     * @return bool
+     */
     public function RequestState(): bool
     {
         if (parent::RequestState()) {
@@ -60,6 +70,11 @@ class TapoMultiSockets extends \TpLink\Device
         return false;
     }
 
+    /**
+     * GetConfigurationForm
+     *
+     * @return string
+     */
     public function GetConfigurationForm(): string
     {
         $Form = json_decode(parent::GetConfigurationForm(), true);
@@ -67,6 +82,13 @@ class TapoMultiSockets extends \TpLink\Device
         return json_encode($Form);
     }
 
+    /**
+     * SwitchModeSlot
+     *
+     * @param  int $Index
+     * @param  bool $State
+     * @return bool
+     */
     public function SwitchModeSlot(int $Index, bool $State): bool
     {
         if (!array_key_exists($Index, $this->ChildIDs)) {
@@ -85,6 +107,14 @@ class TapoMultiSockets extends \TpLink\Device
         return false;
     }
 
+    /**
+     * SwitchModeSlotEx
+     *
+     * @param  int $Index
+     * @param  bool $State
+     * @param  int $Delay
+     * @return bool
+     */
     public function SwitchModeSlotEx(int $Index, bool $State, int $Delay): bool
     {
         if (!array_key_exists($Index, $this->ChildIDs)) {
