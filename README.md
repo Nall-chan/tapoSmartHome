@@ -142,6 +142,10 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 
 ## 1. Changelog
 
+**Version 2.02:**  
+
+- Bessere Fehlermeldung wenn versucht wird ein inaktives Gerät zu bedienen.  
+
 **Version 2.00:**  
 
 - Unterstützung für IP-Symcon 8.1 hinzugefügt.  

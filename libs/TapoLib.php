@@ -735,7 +735,8 @@ namespace TpLink
                             'IconActive' => false,
                             'IconValue'  => '',
                             'ColorActive'=> true,
-                            'ColorValue' => -1],
+                            'ColorValue' => -1
+                        ],
                         [
                             'Value'      => true,
                             'Caption'    => 'Low battery',

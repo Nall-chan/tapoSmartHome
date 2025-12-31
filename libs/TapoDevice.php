@@ -126,6 +126,12 @@ namespace TpLink
          */
         public function RequestAction(string $Ident, mixed $Value): void
         {
+            if (!$this->ReadPropertyBoolean(\TpLink\Property::Open)) {
+                set_error_handler([$this, 'ModulErrorHandler']);
+                trigger_error($this->Translate('Not connected'), E_USER_NOTICE);
+                restore_error_handler();
+                return;
+            }
             $SendIdent = $Ident;
             if (substr($Ident, 0, 4) == 'Pos_') {
                 $IdentParts = explode('_', substr($Ident, 4));
