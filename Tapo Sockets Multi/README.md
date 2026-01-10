@@ -15,9 +15,7 @@
 - [2. Voraussetzungen](#2-voraussetzungen)
 - [3. Software-Installation](#3-software-installation)
 - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
-- [5. Statusvariablen und Profile](#5-statusvariablen-und-profile)
-  - [Statusvariablen](#statusvariablen)
-  - [Profile](#profile)
+- [5. Statusvariablen](#5-statusvariablen)
 - [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
 - [7. Aktionen](#7-aktionen)
 - [8. Anhang](#8-anhang)
@@ -64,11 +62,9 @@ Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokol
 | Interval   | Leseintervall                  | Intervall der Abfrage von Status und Energiewerten (in Sekunden)       |
 | AutoRename | Instanz automatisch umbenennen | Instanz erhält den Namen, welcher in der App vergeben wurde            |
 
-## 5. Statusvariablen und Profile
+## 5. Statusvariablen
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
-
-### Statusvariablen
 
 | Ident                | Name                                   | Typ     | Profil              |
 | -------------------- | -------------------------------------- | ------- | ------------------- |
@@ -82,12 +78,6 @@ Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu 
 | Pos_2_on_time        | Smarte Steckdose 2 - On time (seconds) | integer | Tapo.RuntimeSeconds |
 | Pos_3_on_time        | Smarte Steckdose 3 - On time (seconds) | integer | Tapo.RuntimeSeconds |
 | rssi                 | Rssi                                   | integer |
-
-### Profile
-
-| Name                | Typ     | genutzt von                                |
-| ------------------- | ------- | ------------------------------------------ |
-| Tapo.RuntimeSeconds | integer | Pos_1_on_tim, Pos_2_on_time, Pos_3_on_time |
 
 ## 6. PHP-Befehlsreferenz
 

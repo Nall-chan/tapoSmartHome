@@ -15,7 +15,7 @@
 - [2. Voraussetzungen](#2-voraussetzungen)
 - [3. Software-Installation](#3-software-installation)
 - [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
-- [5. Statusvariablen und Profile](#5-statusvariablen-und-profile)
+- [5. Statusvariablen](#5-statusvariablen)
 - [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
 - [7. Aktionen](#7-aktionen)
 - [8. Anhang](#8-anhang)
@@ -61,9 +61,9 @@ Bei einem Smart Hub wird eine [Konfigurator-Instanz](../Tapo%20Configurator/READ
 ![Discovery](../imgs/conf_discovery.png)  
 **Benutzername und Passwort sind die Cloud/App Zugangsdaten!**  
 
-## 5. Statusvariablen und Profile
+## 5. Statusvariablen
 
-Dieses Modul erstellt keine Statusvariablen und Profile.  
+Dieses Modul erstellt keine Statusvariablen.  
 
 ## 6. PHP-Befehlsreferenz
 
