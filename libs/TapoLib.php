@@ -183,6 +183,8 @@ namespace TpLink
         public const PlugP110 = 'P110'; // WLAN Steckdose mit Messung
         public const PlugP115 = 'P115'; // WLAN-Steckdose Rund mit Verbrauchsanzeige
         public const PlugP300 = 'P300'; // WLAN Power-Strip
+        public const Switch110 = 'S110'; // Smart Switch Relay
+        public const Switch112 = 'S112'; // Smart Switch 2x Relay
         public const BulbL510 = 'L510'; // E27-Glühbirne, dimmbar
         public const BulbL520 = 'L520'; // E27-Glühbirne, dimmbar
         public const BulbL530 = 'L530'; // E27-Glühbirne, mehrfarbig
@@ -202,6 +204,8 @@ namespace TpLink
             self::PlugP110    => GUID::PlugEnergy,
             self::PlugP115    => GUID::PlugEnergy,
             self::PlugP300    => GUID::PlugsMulti,
+            self::Switch110   => GUID::PlugEnergy,
+            self::Switch112   => GUID::PlugsMulti,
             self::BulbL510    => GUID::BulbWithe,
             self::BulbL520    => GUID::BulbWithe,
             self::BulbL530    => GUID::BulbColor,
