@@ -29,7 +29,7 @@
 
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 8.1  
+- Symcon ab Version 9.0  
 
 ## 3. Software-Installation
 
@@ -76,14 +76,14 @@ Gelöschte Einträge werden dauerhaft entfernt, bis so ein Effekt wieder über d
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-| Ident           | Name       | Typ     | Profil                          |
-| --------------- | ---------- | ------- | ------------------------------- |
-| device_on       | Status     | boolean | ~Switch                         |
-| rssi            | Rssi       | integer |                                 |
-| overheated      | Überhitzt  | boolean | ~Alert                          |
-| brightness      | Helligkeit | integer | Tapo.Brightness                 |
-| color_rgb       | Farbe      | integer | ~HexColor                       |
-| lighting_effect | Effekt     | string  | Tapo.LightingEffect.<InstanzID> |
+| Ident           | Name       | Typ     |
+| --------------- | ---------- | ------- |
+| device_on       | Status     | boolean |
+| rssi            | Rssi       | integer |
+| overheated      | Überhitzt  | boolean |
+| brightness      | Helligkeit | integer |
+| color_rgb       | Farbe      | integer |
+| lighting_effect | Effekt     | string  |
 
 ## 6. PHP-Befehlsreferenz
 

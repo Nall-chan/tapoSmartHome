@@ -52,6 +52,7 @@ namespace TpLink
      * @method void WriteAttributeArray(string $Name, array $Value)
      * @method void UnregisterProfile(string $Name)
      * @method bool SendDebug(string $Message, mixed $Data, int $Format)
+     * @method int FindIDForIdent(string $Ident)
      */
     class Device extends \IPSModuleStrict
     {
@@ -208,6 +209,27 @@ namespace TpLink
             return false;
         }
 
+        /**
+         * GetDeviceInfo
+         *
+         * @return false
+         */
+        public function GetDeviceInfo(): false|array
+        {
+            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
+            $Response = $this->SendRequest($Request);
+            if ($Response === null) {
+                return false;
+            }
+            if (array_key_exists(\TpLink\Api\Result::Nickname, $Response)) {
+                $Name = base64_decode($Response[\TpLink\Api\Result::Nickname]);
+                if ($this->ReadPropertyBoolean(\TpLink\Property::AutoRename) && (IPS_GetName($this->InstanceID) != $Name) && ($Name != '')) {
+                    IPS_SetName($this->InstanceID, $Name);
+                }
+            }
+            return $Response;
+        }
+
         /*
          * GetSysInfo
          *
@@ -265,24 +287,17 @@ namespace TpLink
         //}
 
         /**
-         * GetDeviceInfo
+         * OverheatStatusToBool
          *
-         * @return false
+         * @param  array $Values
+         * @return bool
          */
-        public function GetDeviceInfo(): false|array
+        protected function OverheatStatusToBool(array $Values): ?bool
         {
-            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
-            $Response = $this->SendRequest($Request);
-            if ($Response === null) {
-                return false;
+            if (!array_key_exists(\TpLink\VariableIdentOverheatedStatus::overheat_status, $Values)) {
+                return null;
             }
-            if (array_key_exists(\TpLink\Api\Result::Nickname, $Response)) {
-                $Name = base64_decode($Response[\TpLink\Api\Result::Nickname]);
-                if ($this->ReadPropertyBoolean(\TpLink\Property::AutoRename) && (IPS_GetName($this->InstanceID) != $Name) && ($Name != '')) {
-                    IPS_SetName($this->InstanceID, $Name);
-                }
-            }
-            return $Response;
+            return $Values[\TpLink\VariableIdentOverheatedStatus::overheat_status] != 'normal';
         }
 
         /**
@@ -335,7 +350,7 @@ namespace TpLink
         {
             $NamePrefix = '';
             $IdentPrefix = '';
-            if (array_key_exists(\TpLink\Api\Result::SlotNumber, $Values)) {
+            if (array_key_exists(\TpLink\Api\Result::Position, $Values)) {
                 $IdentPrefix = 'Pos_' . $Values[\TpLink\Api\Result::Position] . '_';
                 if (array_key_exists(\TpLink\Api\Result::Nickname, $Values)) {
                     $NamePrefix = base64_decode($Values[\TpLink\Api\Result::Nickname]) . ' - ';
@@ -694,6 +709,98 @@ namespace TpLink
             $data[8] = chr(ord($data[8]) & 0x3f | 0x80);
             // Output the 36 character UUID.
             return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        }
+    }
+
+    trait EnergyUsage
+    {
+        /**
+         * RequestState
+         *
+         * @return bool
+         */
+        public function RequestState(): bool
+        {
+            if (parent::RequestState()) {
+                return $this->GetEnergyUsage();
+            }
+            return false;
+        }
+
+        /**
+         * GetEnergyUsage
+         *
+         * @return false
+         */
+        public function GetEnergyUsage(): bool
+        {
+            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetEnergyUsage);
+            $Result = $this->SendRequest($Request);
+            if ($Result === null) {
+                return false;
+            }
+            $this->SetValue(\TpLink\VariableIdentEnergySocket::today_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::today_runtime] * 60);
+            $this->SetValue(\TpLink\VariableIdentEnergySocket::month_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::month_runtime] * 60);
+            $this->SetValue(\TpLink\VariableIdentEnergySocket::today_energy, $Result[\TpLink\VariableIdentEnergySocket::today_energy]);
+            $this->SetValue(\TpLink\VariableIdentEnergySocket::month_energy, $Result[\TpLink\VariableIdentEnergySocket::month_energy]);
+            $this->SetValue(\TpLink\VariableIdentEnergySocket::current_power, ($Result[\TpLink\VariableIdentEnergySocket::current_power] / 1000));
+            return true;
+        }
+    }
+
+    trait EnergyUsageChilds
+    {
+        /**
+         * RequestState
+         *
+         * @return bool
+         */
+        public function RequestState(): bool
+        {
+            if (parent::RequestState()) {
+                foreach ($this->ChildIDs as $ChildID) {
+                    $Values = [
+                        'device_id'  => $ChildID,
+                        'requestData'=> \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo)
+                    ];
+                    $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
+                    $Response = $this->SendRequest($Request);
+                    if ($Response === null) {
+                        return false;
+                    }
+                    $this->SetVariables($Response[\TpLink\Api\Result::ResponseData][\TpLink\Api\Result]);
+                }
+                return $this->GetEnergyUsageChilds();
+            }
+            return false;
+
+        }
+
+        /**
+         * GetEnergyUsageChilds
+         *
+         * @return bool
+         */
+        protected function GetEnergyUsageChilds(): bool
+        {
+            foreach ($this->ChildIDs as $Position => $ChildID) {
+                $Values = [
+                    'device_id'  => $ChildID,
+                    'requestData'=> \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetEnergyUsage)
+                ];
+                $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::ControlChild, $this->terminalUUID, $Values);
+                $Response = $this->SendRequest($Request);
+                if ($Response === null) {
+                    return false;
+                }
+                $Result = $Response[\TpLink\Api\Result::ResponseData][\TpLink\Api\Result];
+                $IdentPrefix = 'Pos_' . $Position . '_';
+                $this->SetValue($IdentPrefix . \TpLink\VariableIdentEnergySocket::today_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::today_runtime] * 60);
+                $this->SetValue($IdentPrefix . \TpLink\VariableIdentEnergySocket::month_runtime_raw, $Result[\TpLink\VariableIdentEnergySocket::month_runtime] * 60);
+                $this->SetValue($IdentPrefix . \TpLink\VariableIdentEnergySocket::today_energy, $Result[\TpLink\VariableIdentEnergySocket::today_energy]);
+                $this->SetValue($IdentPrefix . \TpLink\VariableIdentEnergySocket::month_energy, $Result[\TpLink\VariableIdentEnergySocket::month_energy]);
+            }
+            return true;
         }
     }
 }

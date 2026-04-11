@@ -1,0 +1,12 @@
+{
+    "id": "{BC84530B-1A6A-4614-8CCB-C60019EEFFF1}",
+    "name": "tapo Multi Energy Sockets",
+    "type": 3,
+    "vendor": "TP-Link",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "TAPOSH",
+    "url": "https://github.com/Nall-chan/tapoSmartHome"
+}

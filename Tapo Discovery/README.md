@@ -30,7 +30,7 @@
 
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 8.1
+- Symcon ab Version 9.0
 
 ## 3. Software-Installation
 

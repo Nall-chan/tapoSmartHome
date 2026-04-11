@@ -15,7 +15,6 @@ require_once dirname(__DIR__) . '/Tapo Light Color/module.php';
  * @version       1.70
  *
  * @property array $LastEffect
- * @method int FindIDForIdent(string $Ident)
  */
 class TapoStripeColor extends TapoLightColor
 {

@@ -29,7 +29,7 @@
 
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 8.1
+- Symcon ab Version 9.0
 
 ## 3. Software-Installation
 
@@ -66,10 +66,10 @@ Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokol
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-| Ident     | Name   | Typ     | Profil  |
-| --------- | ------ | ------- | ------- |
-| device_on | Status | boolean | ~Switch |
-| rssi      | Rssi   | integer |         |
+| Ident     | Name   | Typ     |
+| --------- | ------ | ------- |
+| device_on | Status | boolean |
+| rssi      | Rssi   | integer |
 
 ## 6. PHP-Befehlsreferenz
 

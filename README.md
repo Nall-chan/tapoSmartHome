@@ -24,6 +24,7 @@ Einbindung der TP-Link tapo SmartHome Geräte
     - [tapo Stripe Color](#tapo-stripe-color)
     - [tapo Socket](#tapo-socket)
     - [tapo Energy Socket](#tapo-energy-socket)
+    - [tapo Multi Energy Socket](#tapo-multi-energy-socket)
   - [3. Hub Geräte Instanzen](#3-hub-geräte-instanzen)
     - [tapo Hub Device](#tapo-hub-device)
 - [2. Voraussetzungen](#2-voraussetzungen)
@@ -101,10 +102,18 @@ Zwischenstecker:
 
 ### [tapo Energy Socket](Tapo%20Energy%20Socket/README.md)
 
-Zwischenstecker mit Energiemessung:  
+Zwischenstecker oder Aktor mit Energiemessung:  
 
 - P110 (mini)
 - P115 (rund)
+- S110 (up Aktor)
+
+### [tapo Multi Energy Socket](Tapo%20Energy%20Sockets%20Multi/README.md)
+
+Zwischenstecker oder Aktor mit mehreren Kanälen und Energiemessung:  
+
+- S112 (up Aktor, Modus Schalter)
+- S112 (up Aktor, Modus Rollladen)
 
 Weitere Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
 Hier melden für die integration von weiteren Geräten:  
@@ -125,7 +134,7 @@ Hier melden für die integration von weiteren Geräten:
 
 # 2. Voraussetzungen
 
-- IP-Symcon ab Version 8.1
+- IP-Symcon ab Version 9.0
 
 # 3. Software-Installation
 
@@ -141,6 +150,11 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 # 5. Anhang
 
 ## 1. Changelog
+
+**Version 2.10:**  
+
+- Symcon 9.0 ist voraussetzung.  
+- UP-Aktoren S110 und S112 werden unterstützt.  
 
 **Version 2.02:**  
 

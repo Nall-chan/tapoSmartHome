@@ -7,7 +7,7 @@
 [![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](#2-spenden)
 [![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
 
-# tapo Smart Multi Sockets<!-- omit in toc -->
+# tapo Smart Multi Energy Sockets<!-- omit in toc -->
 
 ## Inhaltsverzeichnis <!-- omit in toc -->
 
@@ -25,7 +25,7 @@
 
 ## 1. Funktionsumfang
 
-- Instanz für Smarte WiFi Verlängerung
+- Instanz für Smarte WiFi Module mit mehreren Kanälen und Energiemessung
 
 ## 2. Voraussetzungen
 
@@ -65,22 +65,34 @@ Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokol
 ## 5. Statusvariablen
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
+Je nach Modus Rollladenaktor oder Schaltaktor können unterschiedliche Statusvariablen angelegt werden.
 
-| Ident                 | Name                                   | Typ     |
-| --------------------- | -------------------------------------- | ------- |
-| Pos_1_device_on       | Smarte Steckdose 1 - Status            | boolean |
-| Pos_2_device_on       | Smarte Steckdose 2 - Status            | boolean |
-| Pos_3_device_on       | Smarte Steckdose 3 - Status            | boolean |
-| Pos_1_on_time_string  | Smarte Steckdose 1 - On time           | string  |
-| Pos_2_on_time_string  | Smarte Steckdose 2 - On time           | string  |
-| Pos_3_on_time_string  | Smarte Steckdose 3 - On time           | string  |
-| Pos_1_on_time         | Smarte Steckdose 1 - On time (seconds) | integer |
-| Pos_2_on_time         | Smarte Steckdose 2 - On time (seconds) | integer |
-| Pos_3_on_time         | Smarte Steckdose 3 - On time (seconds) | integer |
-| Pos_1_overheat_status | Smarte Steckdose 1 - Überhitzt         | boolean |
-| Pos_2_overheat_status | Smarte Steckdose 2 - Überhitzt         | boolean |
-| Pos_3_overheat_status | Smarte Steckdose 3 - Überhitzt         | boolean |
-| rssi                  | Rssi                                   | integer |
+| Ident                   | Name                                | Typ     |
+| ----------------------- | ----------------------------------- | ------- |
+| Pos_1_device_on         | Kanal 1 - Status                    | boolean |
+| Pos_2_device_on         | Kanal 2 - Status                    | boolean |
+| Pos_1_on_time_string    | Kanal 1 - On time                   | string  |
+| Pos_2_on_time_string    | Kanal 2 - On time                   | string  |
+| Pos_1_on_time           | Kanal 1 - On time (seconds)         | integer |
+| Pos_2_on_time           | Kanal 2 - On time (seconds)         | integer |
+| Pos_3_target_pos        | KAnal 3 - Zielposition (0-100)      | integer |
+| Pos_3_motor_status      | Kanal 3 - Motorstatus               | string  |
+| Pos_1_overheat_status   | Kanal 1 - Überhitzt                 | boolean |
+| Pos_2_overheat_status   | Kanal 2 - Überhitzt                 | boolean |
+| Pos_3_overheat_status   | Kanal 3 - Überhitzt                 | boolean |
+| Pos_1_today_runtime_raw | Kanal 1 - Laufzeit Heute  (Minuten) | integer |
+| Pos_2_today_runtime_raw | Kanal 2 - Laufzeit Heute  (Minuten) | integer |
+| Pos_3_today_runtime_raw | Kanal 3 - Laufzeit Heute  (Minuten) | integer |
+| Pos_1_today_energy      | Kanal 1 - Energie Heute             | float   |
+| Pos_2_today_energy      | Kanal 2 - Energie Heute             | float   |
+| Pos_3_today_energy      | Kanal 3 - Energie Heute             | float   |
+| Pos_1_month_runtime_raw | Kanal 1 - Laufzeit Monat (Minuten)  | integer |
+| Pos_2_month_runtime_raw | Kanal 2 - Laufzeit Monat (Minuten)  | integer |
+| Pos_3_month_runtime_raw | Kanal 3 - Laufzeit Monat (Minuten)  | integer |
+| Pos_1_month_energy      | Kanal 1 - Energie Monat             | float   |
+| Pos_2_month_energy      | Kanal 2 - Energie Monat             | float   |
+| Pos_3_month_energy      | Kanal 3 - Energie Monat             | float   |
+| rssi                    | Rssi                                | integer |
 
 ## 6. PHP-Befehlsreferenz
 

@@ -14,7 +14,6 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  *
  * @version       1.70
  *
- * @method int FindIDForIdent(string $Ident)
  */
 class TapoSocket extends \TpLink\Device
 {

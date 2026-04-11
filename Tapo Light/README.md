@@ -66,12 +66,12 @@ Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokol
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-| Ident      | Name       | Typ     | Profil          |
-| ---------- | ---------- | ------- | --------------- |
-| device_on  | Status     | boolean | ~Switch         |
-| rssi       | Rssi       | integer |                 |
-| overheated | Überhitzt  | boolean | ~Alert          |
-| brightness | Helligkeit | integer | Tapo.Brightness |
+| Ident      | Name       | Typ     |
+| ---------- | ---------- | ------- |
+| device_on  | Status     | boolean |
+| rssi       | Rssi       | integer |
+| overheated | Überhitzt  | boolean |
+| brightness | Helligkeit | integer |
 
 ## 6. PHP-Befehlsreferenz
 

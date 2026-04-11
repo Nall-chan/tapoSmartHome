@@ -73,6 +73,7 @@ namespace TpLink\Api
         public const Ip = 'ip';
         public const Mac = 'mac';
         public const DeviceType = 'device_type';
+        public const DeviceMode = 'device_mode';
         public const Type = 'type';
         public const DeviceModel = 'device_model';
         public const Model = 'model';
@@ -84,6 +85,12 @@ namespace TpLink\Api
         public const SlotNumber = 'slot_number';
         public const ResponseData = 'responseData';
         public const Category = 'category';
+    }
+
+    class DeviceMode
+    {
+        public const Motor = 'motor';
+        public const Switch = 'switch';
     }
 
     class Protocol
@@ -151,7 +158,9 @@ namespace TpLink\Api
 namespace TpLink\VariableIdent
 {
     const OnOff = '\TpLink\VariableIdentOnOff';
+    const Motor = '\TpLink\VariableIdentMotor';
     const Overheated = '\TpLink\VariableIdentOverheated';
+    const OverheatedStatus = '\TpLink\VariableIdentOverheatedStatus';
     const Socket = '\TpLink\VariableIdentSocket';
     const Rssi = '\TpLink\VariableIdentRssi';
     const Light = '\TpLink\VariableIdentLight';
@@ -205,7 +214,7 @@ namespace TpLink
             self::PlugP115    => GUID::PlugEnergy,
             self::PlugP300    => GUID::PlugsMulti,
             self::Switch110   => GUID::PlugEnergy,
-            self::Switch112   => GUID::PlugsMulti,
+            self::Switch112   => GUID::PlugsEnergyMulti,
             self::BulbL510    => GUID::BulbWithe,
             self::BulbL520    => GUID::BulbWithe,
             self::BulbL530    => GUID::BulbColor,
@@ -326,6 +335,7 @@ namespace TpLink
         public const Plug = '{AAD6F48D-C23F-4C59-8049-A9746DEB699B}';
         public const PlugEnergy = '{B18B6CAA-AB46-495D-9A7A-85FA3A83113A}';
         public const PlugsMulti = '{C923F554-4621-446E-B0D2-1422F2EB84B5}';
+        public const PlugsEnergyMulti = '{BC84530B-1A6A-4614-8CCB-C60019EEFFF1}';
         public const BulbColor = '{3C59DCC3-4441-4E1C-A59C-9F8D26CE2E82}';
         public const BulbWithe = '{1B9D73D6-853D-4E2E-9755-2273FD7A6123}';
         public const StripeColor = '{DF8D96FD-9BC7-4A98-B9E2-C8B2FF92B892}';
@@ -384,6 +394,76 @@ namespace TpLink
             ]
         ];
     }
+    class VariableIdentMotor extends VariableIdent
+    {
+        public const motor_status = 'motor_status';
+        public const current_pos = 'current_pos';
+        public const target_pos = 'target_pos';
+        public const motor_stuck = 'motor_stuck';
+        public static $Variables = [
+            self::motor_status=> [
+                IPSVarName        => 'Motor Status',
+                IPSVarType        => VARIABLETYPE_STRING,
+
+                IPSVarPresentation        => [
+                    PRESENTATION  => VARIABLE_PRESENTATION_ENUMERATION,
+                    'ICON'        => '',
+                    'LAYOUT'      => 0,
+                    'DISPLAY'     => 0,
+                    'OPTIONS'     => [
+                        [
+                            'Value'              => 'open',
+                            'Caption'            => 'Open',
+                            'IconActive'         => false,
+                            'IconValue'          => 'angles-up',
+                            'Color'              => -1
+                        ],
+                        [
+                            'Value'              => 'pause',
+                            'Caption'            => 'Stop',
+                            'IconActive'         => false,
+                            'IconValue'          => 'pause',
+                            'Color'              => -1
+                        ],
+
+                        [
+                            'Value'              => 'close',
+                            'Caption'            => 'Close',
+                            'IconActive'         => false,
+                            'IconValue'          => 'angles-down',
+                            'Color'              => -1
+                        ],
+
+                    ]
+                ],
+                HasAction    => true
+            ],
+            self::target_pos=> [
+                IPSVarName        => 'Position',
+                IPSVarType        => VARIABLETYPE_INTEGER,
+                IPSVarPresentation=> [
+                    PRESENTATION           => VARIABLE_PRESENTATION_SHUTTER,
+                    'CLOSE_INSIDE_VALUE'   => 0,
+                    'OPEN_OUTSIDE_VALUE'   => 100,
+                    'SUN_POSITION'         => 1,
+                    'USAGE_TYPE'           => 0,
+                    'MAX_ROTATION_INSIDE'  => 0,
+                    'MAX_ROTATION_OUTSIDE' => 0,
+                ],
+                HasAction    => true
+            ]
+        ];
+    }
+    class VariableIdentEnergySocket
+    {
+        public const today_runtime = 'today_runtime';
+        public const month_runtime = 'month_runtime';
+        public const today_runtime_raw = 'today_runtime_raw';
+        public const month_runtime_raw = 'month_runtime_raw';
+        public const today_energy = 'today_energy';
+        public const month_energy = 'month_energy';
+        public const current_power = 'current_power';
+    }
 
     class VariableIdentOverheated extends VariableIdent
     {
@@ -432,6 +512,58 @@ namespace TpLink
                     'SHOW_PREVIEW'  => true
                 ],
                 HasAction    => false
+            ]
+        ];
+    }
+
+    class VariableIdentOverheatedStatus extends VariableIdent
+    {
+        public const overheat_status = 'overheat_status';
+
+        public static $Variables = [
+            self::overheat_status=> [
+                IPSVarName        => 'Overheated',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION    => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'COLOR'         => -1,
+                    'ICON'          => '',
+                    'CONTENT_COLOR' => -1,
+                    'DISPLAY_TYPE'  => 0,
+                    'OPTIONS'       => [
+                        [
+                            'ColorDisplay'       => -1,
+                            'ContentColorDisplay'=> -1,
+                            'Value'              => false,
+                            'Caption'            => 'OK',
+                            'IconActive'         => false,
+                            'IconValue'          => '',
+                            'ColorActive'        => true,
+                            'ColorValue'         => -1,
+                            'Color'              => -1,
+                            'ContentColorActive' => false,
+                            'ContentColor'       => -1
+                        ],
+                        [
+                            'ColorDisplay'       => 16711680,
+                            'ContentColorDisplay'=> -1,
+                            'Value'              => true,
+                            'Caption'            => 'Alarm',
+                            'IconActive'         => true,
+                            'IconValue'          => 'Warning',
+                            'ColorActive'        => true,
+                            'ColorValue'         => 16711680,
+                            'ContentColorActive' => false,
+                            'ContentColorValue'  => -1,
+                            'Color'              => -1,
+                            'ContentColor'       => -1
+                        ]
+                    ],
+                    'PREVIEW_STYLE' => 1,
+                    'SHOW_PREVIEW'  => true
+                ],
+                ReceiveFunction=> 'OverheatStatusToBool',
+                HasAction      => false
             ]
         ];
     }

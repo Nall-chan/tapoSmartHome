@@ -29,7 +29,7 @@
 
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 8.1
+- Symcon ab Version 9.0
 
 ## 3. Software-Installation
 
@@ -66,17 +66,17 @@ Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokol
 
 Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-| Ident             | Name                      | Typ     | Profil          |
-| ----------------- | ------------------------- | ------- | --------------- |
-| device_on         | Status                    | boolean | ~Switch         |
-| rssi              | Rssi                      | integer |                 |
-| current_power     | Aktuelle Leistung         | float   | ~Watt           |
-| today_runtime     | Laufzeit Heute            | string  |                 |
-| today_runtime_raw | Laufzeit Heute  (Minuten) | integer | Tapo.Runtime    |
-| today_energy      | Energie Heute             | float   | ~Electricity.Wh |
-| month_runtime     | Laufzeit Monat            | string  |                 |
-| month_runtime_raw | Laufzeit Monat (Minuten)  | integer | Tapo.Runtime    |
-| month_energy      | Energie Monat             | float   | ~Electricity.Wh |
+| Ident             | Name                      | Typ     |
+| ----------------- | ------------------------- | ------- |
+| device_on         | Status                    | boolean |
+| rssi              | Rssi                      | integer |
+| current_power     | Aktuelle Leistung         | float   |
+| today_runtime     | Laufzeit Heute            | string  |
+| today_runtime_raw | Laufzeit Heute  (Minuten) | integer |
+| today_energy      | Energie Heute             | float   |
+| month_runtime     | Laufzeit Monat            | string  |
+| month_runtime_raw | Laufzeit Monat (Minuten)  | integer |
+| month_energy      | Energie Monat             | float   |
 
 ## 6. PHP-Befehlsreferenz
 
