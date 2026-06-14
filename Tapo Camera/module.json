@@ -1,0 +1,12 @@
+{
+    "id": "{16C67F80-D963-451A-BED3-68B2E7B12F6C}",
+    "name": "tapo Camera",
+    "type": 3,
+    "vendor": "TP-Link",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "TAPOSH",
+    "url": "https://github.com/Nall-chan/tapoSmartHome"
+}

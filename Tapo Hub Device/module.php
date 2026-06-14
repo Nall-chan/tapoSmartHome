@@ -4,6 +4,7 @@ declare(strict_types=1);
 eval('declare(strict_types=1);namespace TapoHubDevice {?>' . file_get_contents(dirname(__DIR__) . '/libs/helper/DebugHelper.php') . '}');
 eval('declare(strict_types=1);namespace TapoHubDevice {?>' . file_get_contents(dirname(__DIR__) . '/libs/helper/VariableProfileHelper.php') . '}');
 require_once dirname(__DIR__) . '/libs/TapoLib.php';
+require_once dirname(__DIR__) . '/libs/VariableIdent.php';
 
 /**
  * TapoHubDevice Klasse für die Anbindung von TP-Link tapo Geräte welche mit Hubs verbunden werden.
@@ -150,15 +151,9 @@ class TapoHubDevice extends IPSModuleStrict
         ));
         $Result = unserialize($Ret);
         $this->SendDebug('Result', $Result, 0);
-        $Error_code = $Result[\TpLink\Api\ErrorCode];
-        if ($Error_code != 0) {
-            if (array_key_exists($Error_code, \TpLink\Api\Protocol::$ErrorCodes)) {
-                $msg = \TpLink\Api\Protocol::$ErrorCodes[$Error_code];
-            } else {
-                $msg = $Error_code;
-            }
+        if ($Result[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
             set_error_handler([$this, 'ModulErrorHandler']);
-            trigger_error($this->Translate($msg), E_USER_NOTICE);
+            trigger_error($Result[\TpLink\Api\ErrorCode] . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($Result[\TpLink\Api\ErrorCode])), E_USER_NOTICE);
             restore_error_handler();
             return false;
         }

@@ -39,7 +39,7 @@ class TapoHubConfigurator extends IPSModuleStrict
      */
     public function GetCompatibleParents(): string
     {
-        return '{"type": "require", "moduleIDs": ["' . \TpLink\GUID::Hub . '"]}';
+        return '{"type": "require", "moduleIDs": ["' . \TpLink\GUID::Hub100 . '","' . \TpLink\GUID::Hub200 . '"]}';
     }
 
     /**
@@ -97,10 +97,7 @@ class TapoHubConfigurator extends IPSModuleStrict
         $this->SendDebug('IPSDevices', $IPSDevices, 0);
         foreach ($Devices as $Device) {
             $InstanceID = array_search(
-                [
-                    'moduleID'                   => $Device['moduleID'],
-                    \TpLink\Api\Result::DeviceID => $Device[\TpLink\Api\Result::DeviceID]
-                ],
+                $Device[\TpLink\Api\Result::DeviceID],
                 $IPSDevices
             );
             if ($InstanceID) {
@@ -121,9 +118,9 @@ class TapoHubConfigurator extends IPSModuleStrict
             ];
         }
 
-        foreach ($IPSDevices as $InstanceID => $Data) {
+        foreach ($IPSDevices as $InstanceID => $DeviceID) {
             $Values[] = [
-                'DeviceId'           => $Data[\TpLink\Property::DeviceId],
+                'DeviceId'           => $DeviceID,
                 'name'               => IPS_GetName($InstanceID),
                 'type'               => '',
                 'model'              => '',
@@ -143,19 +140,19 @@ class TapoHubConfigurator extends IPSModuleStrict
     private function GetDevicesFromHub(): array
     {
         $Result = $this->SendRequest(\TpLink\Api\Method::GetChildDeviceList);
+
         if (!$Result) {
             return [];
         }
-        $List = $Result[\TpLink\Api\Result::ChildList];
-        foreach ($List as $Index => $ChildDevice) {
+        foreach ($Result as $Index => $ChildDevice) {
             $Guid = \TpLink\HubChildDevicesModel::GetGuidByDeviceModel($ChildDevice[\TpLink\Api\Result::Model]);
             if ($Guid) {
-                $List[$Index]['moduleID'] = $Guid;
+                $Result[$Index]['moduleID'] = $Guid;
             } else {
-                unset($List[$Index]);
+                unset($Result[$Index]);
             }
         }
-        return $List;
+        return $Result;
     }
 
     /**
@@ -182,10 +179,8 @@ class TapoHubConfigurator extends IPSModuleStrict
         }
         $AllInstancesOfParent = array_flip(array_filter(IPS_GetInstanceListByModuleID(\TpLink\GUID::HubChild), [$this, 'FilterInstances']));
         foreach ($AllInstancesOfParent as $key => &$value) {
-            $value = [
-                'moduleID'                   => \TpLink\GUID::HubChild,
-                \TpLink\Property::DeviceId   => IPS_GetProperty($key, \TpLink\Property::DeviceId)
-            ];
+            $value = IPS_GetProperty($key, \TpLink\Property::DeviceId);
+
         }
         return $AllInstancesOfParent;
     }

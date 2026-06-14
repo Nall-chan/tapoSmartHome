@@ -90,13 +90,15 @@ class TapoDiscovery extends IPSModuleStrict
         foreach ($Devices as $Device) {
             $Guid = \TpLink\DeviceModel::GetGuidByDeviceModel($Device[\TpLink\Api\Result::DeviceModel]);
             if ($Guid == '') {
-                continue;
+                $Guid = \TpLink\DeviceType::GetGuidByDeviceType($Device[\TpLink\Api\Result::DeviceType]);
+                if ($Guid == '') {
+                    continue;
+                }
             }
             $InstanceID = array_search(strtoupper($Device[\TpLink\Api\Result::Mac]), $IPSDevices);
             if ($InstanceID) {
                 $Open = false;
-                if ($Guid == \TpLink\GUID::HubConfigurator) {
-                    $Guid = \TpLink\GUID::Hub;
+                if (\TpLink\GUID::GuidIsHub($Guid)) {
                     $ConnectionID = IPS_GetInstance($InstanceID)['ConnectionID'];
                     if (IPS_InstanceExists($ConnectionID)) {
                         $Open = IPS_GetProperty($ConnectionID, \TpLink\Property::Open);
@@ -106,23 +108,25 @@ class TapoDiscovery extends IPSModuleStrict
                 }
                 unset($IPSDevices[$InstanceID]);
             } else {
-                if ($Guid == \TpLink\GUID::HubConfigurator) {
-                    $Guid = \TpLink\GUID::Hub;
-                }
                 $Open = true;
+            }
+            $Protocol = \TpLink\Crypt\HTTP;
+            if (isset($Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::Protocol])) {
+                $Protocol = $Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::Protocol] ? \TpLink\Crypt\HTTPS : \TpLink\Crypt\HTTP;
             }
             $Create = [
                 'moduleID'                => $Guid,
                 'configuration'           => [
-                    \TpLink\Property::Open           => $Open,
-                    \TpLink\Property::Host           => $Device[\TpLink\Api\Result::Ip],
-                    \TpLink\Property::Mac            => $Device[\TpLink\Api\Result::Mac],
-                    \TpLink\Property::Username       => $this->ReadAttributeString(\TpLink\Attribute::Username),
-                    \TpLink\Property::Password       => $this->ReadAttributeString(\TpLink\Attribute::Password),
-                    \TpLink\Property::Protocol       => $Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::Protocol] ?? 'AES'
+                    \TpLink\Property::Open              => $Open,
+                    \TpLink\Property::Host              => $Device[\TpLink\Api\Result::Ip],
+                    \TpLink\Property::Mac               => $Device[\TpLink\Api\Result::Mac],
+                    \TpLink\Property::Username          => $this->ReadAttributeString(\TpLink\Attribute::Username),
+                    \TpLink\Property::Password          => $this->ReadAttributeString(\TpLink\Attribute::Password),
+                    \TpLink\Property::EncryptType       => $Device[\TpLink\Api\Result::MGT][\TpLink\Api\Result::EncryptType] ?? 'AES',
+                    \TpLink\Property::Protocol          => $Protocol
                 ]
             ];
-            if ($Guid == \TpLink\GUID::Hub) {
+            if (\TpLink\GUID::GuidIsHub($Guid)) {
                 $Create = [[
                     'moduleID'                => \TpLink\GUID::HubConfigurator,
                     'configuration'           => new stdClass()
@@ -167,7 +171,7 @@ class TapoDiscovery extends IPSModuleStrict
      *
      * @return array
      */
-    private function Discover(): array
+    private function Discover(bool $Retry = true): array
     {
         $Key = (new \phpseclib\Crypt\RSA())->createKey(1024);
         $JsonPayload = \TpLink\Api\Protocol::BuildDiscoveryRequest($Key['publickey']);
@@ -202,7 +206,7 @@ class TapoDiscovery extends IPSModuleStrict
                 if (!$JsonReceive) {
                     continue;
                 }
-                if ($JsonReceive[\TpLink\Api\ErrorCode] != 0) {
+                if ($JsonReceive[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
                     continue;
                 }
                 $Result = $JsonReceive[\TpLink\Api\Result];
@@ -211,6 +215,10 @@ class TapoDiscovery extends IPSModuleStrict
             socket_close($socket);
         } else {
             $this->SendDebug('Error', 'on create broadcast Socket', 0);
+        }
+        if ((count($DevicesData) == 0) && $Retry) {
+            IPS_Sleep(2000);
+            $DevicesData = $this->Discover(false);
         }
         return $DevicesData;
     }
@@ -223,7 +231,7 @@ class TapoDiscovery extends IPSModuleStrict
     private function GetIPSInstances(): array
     {
         $Devices = [];
-        foreach (\TpLink\DeviceModel::$DeviceModels as $GUID) {
+        foreach (\TpLink\Guid::$GUIDs as $GUID) {
             $InstanceIDList = IPS_GetInstanceListByModuleID($GUID);
             foreach ($InstanceIDList as $InstanceID) {
                 if ($GUID == \TpLink\GUID::HubConfigurator) {

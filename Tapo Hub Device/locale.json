@@ -19,6 +19,8 @@
             "Setpoint temperature": "Solltemperatur",
             "Frost protection": "Frostschutz",
             "Child Protection": "Kindersicherung",
+            "Opened": "Geöffnet",
+            "Closed": "Geschlossen",
             "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }

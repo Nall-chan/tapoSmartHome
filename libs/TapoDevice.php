@@ -22,6 +22,7 @@ namespace {
     eval('declare(strict_types=1);namespace Tapo {?>' . file_get_contents(__DIR__ . '/helper/AttributeArrayHelper.php') . '}');
     require_once 'TapoCrypt.php';
     require_once 'TapoLib.php';
+    require_once 'VariableIdent.php';
 }
 
 namespace TpLink
@@ -37,7 +38,6 @@ namespace TpLink
      * @version       1.70
      *
      * @property string $terminalUUID
-     * @property string $token
      * @property string $cookie
      * @property string $TpLinkCipherIV
      * @property string $TpLinkCipherKey
@@ -45,7 +45,13 @@ namespace TpLink
      * @property string $KlapRemoteSeed
      * @property string $KlapUserHash
      * @property ?int $KlapSequenz
+     * @property string $LocalNonce
+     * @property string $ServerNonce
+     * @property string $Username
+     * @property string $PwdHash
+     * @property string $TokenUrl
      * @property string[] $ChildIDs
+     * @property int $Version
      *
      * @method void RegisterAttributeArray(string $Name, array $Value, int $Size = 0)
      * @method array ReadAttributeArray(string $Name)
@@ -63,7 +69,8 @@ namespace TpLink
         use \Tapo\VariableProfileHelper;
         use \Tapo\AttributeArrayHelper;
         use Crypt\Klap;
-        use Crypt\SecurePassthroug;
+        use Crypt\AESSecurePassthrough;
+        use Crypt\SSLAESSecurePassthrough;
 
         protected static $ModuleIdents = [];
         protected $TranslationCache = [];
@@ -80,7 +87,8 @@ namespace TpLink
             $this->RegisterPropertyBoolean(\TpLink\Property::Open, false);
             $this->RegisterPropertyString(\TpLink\Property::Host, '');
             $this->RegisterPropertyString(\TpLink\Property::Mac, '');
-            $this->RegisterPropertyString(\TpLink\Property::Protocol, 'KLAP');
+            $this->RegisterPropertyString(\TpLink\Property::EncryptType, 'KLAP');
+            $this->RegisterPropertyString(\TpLink\Property::Protocol, \TpLink\Crypt\HTTP);
             $this->RegisterPropertyString(\TpLink\Property::Username, '');
             $this->RegisterPropertyString(\TpLink\Property::Password, '');
             $this->RegisterPropertyInteger(\TpLink\Property::Interval, 5);
@@ -89,6 +97,26 @@ namespace TpLink
             $this->terminalUUID = self::guidv4();
             $this->InitBuffers();
             $this->ChildIDs = [];
+            $this->Version = 0;
+        }
+
+        /**
+         * Migrate
+         *
+         * @param  string $JSONData
+         * @return string
+         */
+        public function Migrate(string $JSONData): string
+        {
+            // Prüfe Version diese Modul-Instanz
+            $j = json_decode($JSONData);
+            if (isset($j->configuration->{\TpLink\Property::EncryptType})) {
+                return $JSONData;
+            }
+            $this->LogMessage('Migrate Protocol and EncryptType', KL_NOTIFY);
+            $j->configuration->{\TpLink\Property::EncryptType} = $j->configuration->{\TpLink\Property::Protocol};
+            $j->configuration->{\TpLink\Property::Protocol} = \TpLink\Crypt\HTTP;
+            return json_encode($j);
         }
 
         /**
@@ -111,6 +139,7 @@ namespace TpLink
                         $this->SetStatus(IS_EBASE + 1);
                     }
                     $this->SetTimerInterval(\TpLink\Timer::RequestState, $this->ReadPropertyInteger(\TpLink\Property::Interval) * 1000);
+                    $this->FetchAppComponents();
                     return;
                 }
             } else {
@@ -139,7 +168,61 @@ namespace TpLink
                 $Values[\TpLink\Api\Result::DeviceID] = $this->ChildIDs[array_shift($IdentParts)];
                 $SendIdent = implode('_', $IdentParts);
             }
+            $Parts = explode('__', $SendIdent);
+            if (count($Parts) > 1) {
+                $ComponentClass = array_shift($Parts);
+                if (class_exists('\\TpLink\\Components\\' . $ComponentClass)) {
 
+                    $SendIdent = $Ident;
+                    $SendValue = $Value;
+                    /** @var \TpLink\Components\Component $Class */
+                    $Class = \TpLink\Components\Component::getClass(lcfirst($ComponentClass));
+                    if (method_exists($this, 'processSpecialWritePayload')) {
+                        if ($this->processSpecialWritePayload($Class->getComponentName(), $Ident, $Value)) {
+                            return;
+                        }
+                    }
+                    if (isset($Class::$Variables[$SendIdent])) {
+                        if (array_key_exists(\TpLink\SendFunction, $Class::$Variables[$SendIdent])) {
+                            $SendValue = $Class::{$Class::$Variables[$SendIdent][\TpLink\SendFunction]}($Value);
+                            if ($SendValue === null) {
+                                return;
+                            }
+                        } else {
+                            switch ($Class::$Variables[$SendIdent][\TpLink\IPSVarType]) {
+                                case VARIABLETYPE_BOOLEAN:
+                                    $SendValue = $Value ? 'on' : 'off';
+                                    break;
+                                case VARIABLETYPE_INTEGER:
+                                    $SendValue = strval($Value);
+                                    break;
+                                case VARIABLETYPE_STRING:
+                                    $SendValue = strval($Value);
+                                    break;
+                            }
+                        }
+                        $WriteRequest = $Class::getWriteRequest($Parts, $SendValue);
+                        if (count($WriteRequest)) {
+                            $Request = \TpLink\Api\Protocol::BuildMultipleRequest([$WriteRequest]);
+                            $Response = $this->SendRequest($Request);
+                            if ($Response !== null && isset($Response[\TpLink\Api\Result::Responses][0][\TpLink\Api\ErrorCode]) && $Response[\TpLink\Api\Result::Responses][0][\TpLink\Api\ErrorCode] == \TpLink\Api\ErrorCodes::Success) {
+                                $this->SendDebug('Write Response', $Response, 0);
+                                $this->SetValue($Ident, $Value);
+                                return;
+                            }
+                            $ErrorCode = $Response[\TpLink\Api\Result::Responses][0][\TpLink\Api\ErrorCode] ?? \TpLink\Api\ErrorCodes::UnknownMethodError;
+                            set_error_handler([$this, 'ModulErrorHandler']);
+                            trigger_error($ErrorCode . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($ErrorCode)), E_USER_NOTICE);
+                            restore_error_handler();
+                            return;
+                        }
+                    }
+                }
+                set_error_handler([$this, 'ModulErrorHandler']);
+                trigger_error($this->Translate('Invalid ident'), E_USER_NOTICE);
+                restore_error_handler();
+                return;
+            }
             $AllIdents = self::GetModuleIdents();
             if (array_key_exists($SendIdent, $AllIdents)) {
                 if ($AllIdents[$SendIdent][\TpLink\HasAction]) {
@@ -216,6 +299,30 @@ namespace TpLink
          */
         public function GetDeviceInfo(): false|array
         {
+            if ($this->Version == 3) {
+                $Response = $this->SendMultipleRequest([
+                    [
+                        \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetDeviceInfo,
+                        \TpLink\Api\Protocol::Params => [
+                            'device_info'=> [
+                                'name' => [
+                                    'basic_info'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]);
+                if (isset($Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'])) {
+                    $Response = $Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'];
+                    if (array_key_exists(\TpLink\Api\Result::DeviceAlias, $Response)) {
+                        $Name = $Response[\TpLink\Api\Result::DeviceAlias];
+                        if ($this->ReadPropertyBoolean(\TpLink\Property::AutoRename) && (IPS_GetName($this->InstanceID) != $Name) && ($Name != '')) {
+                            IPS_SetName($this->InstanceID, $Name);
+                        }
+                    }
+                }
+                return $Response;
+            }
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
             $Response = $this->SendRequest($Request);
             if ($Response === null) {
@@ -228,6 +335,54 @@ namespace TpLink
                 }
             }
             return $Response;
+        }
+        /**
+         * Debug_SendRequest
+         *
+         * @param  string $Method
+         * @param  array $Params
+         * @return array
+         */
+        public function Debug_SendRequest(string $Method, array $Params): ?array
+        {
+            $Request = \TpLink\Api\Protocol::BuildRequest($Method, '', $Params);
+            $Response = $this->SendRequest($Request);
+            $this->SendDebug('Request', $Request, 0);
+            $this->SendDebug('Response', $Response, 0);
+            return $Response;
+        }
+        /**
+         * Debug_SendMultipleRequest
+         *
+         * @param  array $Requests
+         * @return array
+         */
+        protected function SendMultipleRequest(array $Requests): array
+        {
+            $Request = \TpLink\Api\Protocol::BuildMultipleRequest(
+                $Requests
+            );
+            $RequestMethods = array_column($Requests, \TpLink\Api\Protocol::Method);
+            $Results = array_combine($RequestMethods, array_fill(0, count($RequestMethods), null));
+            $Responses = $this->SendRequest($Request);
+            $this->SendDebug('Request', $Request, 0);
+            if ($Responses !== null && isset($Responses[\TpLink\Api\Result::Responses])) {
+                $Responses = $Responses[\TpLink\Api\Result::Responses];
+            } else {
+                return $Results;
+            }
+            foreach ($Responses as $Response) {
+                if (!isset($Response[\TpLink\Api\ErrorCode]) || $Response[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
+                    $ErrorCode = $Response[\TpLink\Api\ErrorCode] ?? \TpLink\Api\ErrorCodes::UnknownMethodError;
+                    set_error_handler([$this, 'ModulErrorHandler']);
+                    trigger_error($ErrorCode . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($ErrorCode)), E_USER_NOTICE);
+                    restore_error_handler();
+                    continue;
+                }
+                $Results[$Response[\TpLink\Api\Protocol::Method]] = $Response[\TpLink\Api\Result];
+            }
+            $this->SendDebug('Results', $Results, 0);
+            return $Results;
         }
 
         /*
@@ -286,6 +441,150 @@ namespace TpLink
         }*/
         //}
 
+        /**
+         * FetchAppComponents
+         *
+         * @return void
+         */
+        protected function FetchAppComponents(): void
+        {
+            $Response = $this->SendMultipleRequest([
+                [
+                    \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetAppComponentList,
+                    \TpLink\Api\Protocol::Params => [
+                        'app_component' => [
+                            'name' => ['app_component_list']
+                        ]
+                    ]
+                ],
+                [
+                    \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetConnectionType,
+                    \TpLink\Api\Protocol::Params => [
+                        'network' => [
+                            'get_connection_type' => new \stdClass()
+                        ]
+                    ]
+                ]
+            ]);
+            if ($Response[\TpLink\Api\MethodV3::GetConnectionType] !== null) {
+                $Result = $Response[\TpLink\Api\MethodV3::GetConnectionType];
+                if (isset($Result['link_type'])) {
+                    $this->RegisterVariableString('link_type', $this->Translate('Connection Type'), [], 0);
+                    $this->SetValue('link_type', $this->Translate($Result['link_type']));
+                }
+                if (isset($Result['rssiValue'])) {
+                    $this->RegisterVariableInteger('rssiValue', $this->Translate('RSSI Value'), [], 0);
+                    $this->SetValue('rssiValue', (int) $Result['rssiValue']);
+                }
+            }
+            if ($Response[\TpLink\Api\MethodV3::GetAppComponentList] !== null) {
+                $ComponentData = $Response[\TpLink\Api\MethodV3::GetAppComponentList]['app_component'];
+                if (isset($ComponentData[\TpLink\Api\Result::AppComponentList])) {
+                    $this->ProcessAppComponents($ComponentData[\TpLink\Api\Result::AppComponentList]);
+                }
+            }
+        }
+
+        /**
+         * ProcessAppComponents
+         *
+         * @param array $Components
+         * @return void
+         */
+        protected function ProcessAppComponents(array $Components): void
+        {
+            $this->SendDebug('AppComponents', $Components, 0);
+
+            foreach ($Components as $Component) {
+                if (!\TpLink\Components\Component::isComponentNameValid($Component[\TpLink\Api\Result::ComponentName])) {
+                    $this->SendDebug('Skip Component', $Component[\TpLink\Api\Result::ComponentName], 0);
+                    continue;
+                }
+                /**
+                 * @var \TpLink\Components\Component $Class
+                 */
+                $Class = \TpLink\Components\Component::getClass($Component[\TpLink\Api\Result::ComponentName]);
+                $this->SendDebug('ComponentClass', $Class->getComponentName(), 0);
+                $Responses = $this->SendMultipleRequest($Class::getReadRequest());
+                foreach ($Responses as $Method => $Response) {
+                    if ($Response === null) {
+                        continue;
+                    }
+                    $this->SendDebug($Class->getComponentName() . ': Read Response', $Response, 0);
+                    if (method_exists($this, 'processSpecialReadResponse')) {
+                        $Variables = $this->processSpecialReadResponse($Method, $Response);
+                        if (is_array($Variables)) {
+                            $this->SendDebug('Variables:', $Variables, 0);
+                            foreach ($Variables as $Ident =>$Variable) {
+                                if (array_key_exists(\TpLink\IPSVarPresentationFunction, $Variable)) {
+                                    $Presentation = $Class->{$Variable[\TpLink\IPSVarPresentationFunction]}();
+                                } else {
+                                    $Presentation = $this->TranslatePresentation($Variable[\TpLink\IPSVarPresentation]);
+                                }
+                                $this->MaintainVariable(
+                                    $Ident,
+                                    $this->Translate($Variable[\TpLink\IPSVarName]),
+                                    $Variable[\TpLink\IPSVarType],
+                                    $Presentation,
+                                    0,
+                                    true
+                                );
+                                if ($Variable[\TpLink\HasAction] ?? false) {
+                                    $this->EnableAction($Ident);
+                                }
+                                if (isset($Variable['Value'])) {
+                                    $this->SetValue($Ident, $Variable['Value']);
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                    $Idents = $Class::processReadResponse($Response, $Class->getComponentName());
+                    $this->SendDebug('Ident:', $Idents, 0);
+                    foreach ($Idents as $Ident => $Value) {
+                        if (!array_key_exists($Ident, $Class::$Variables)) {
+                            continue;
+                        }
+                        $VarParams = $Class::$Variables[$Ident];
+                        if (array_key_exists(\TpLink\ReceiveFunction, $VarParams)) {
+                            $Value = $Class::{$VarParams[\TpLink\ReceiveFunction]}($Value);
+                            if (is_null($Value)) {
+                                continue;
+                            }
+                        } else {
+                            switch ($VarParams[\TpLink\IPSVarType]) {
+                                case VARIABLETYPE_BOOLEAN:
+                                    $Value = $Value == 'on';
+                                    break;
+                                case VARIABLETYPE_INTEGER:
+                                    $Value = intval($Value);
+                                    break;
+                                case VARIABLETYPE_STRING:
+                                    $Value = strval($Value);
+                                    break;
+                            }
+                        }
+                        if (array_key_exists(\TpLink\IPSVarPresentationFunction, $VarParams)) {
+                            $Presentation = $Class->{$VarParams[\TpLink\IPSVarPresentationFunction]}();
+                        } else {
+                            $Presentation = $this->TranslatePresentation($VarParams[\TpLink\IPSVarPresentation]);
+                        }
+                        $this->MaintainVariable(
+                            $Ident,
+                            $this->Translate($VarParams[\TpLink\IPSVarName]),
+                            $VarParams[\TpLink\IPSVarType],
+                            $Presentation,
+                            0,
+                            true
+                        );
+                        if ($VarParams[\TpLink\HasAction] ?? false) {
+                            $this->EnableAction($Ident);
+                        }
+                        $this->SetValue($Ident, $Value);
+                    }
+                }
+            }
+        }
         /**
          * OverheatStatusToBool
          *
@@ -474,15 +773,9 @@ namespace TpLink
                 return false;
             }
             if (isset($ChildRequestValues)) {
-                $Error_code = $Response[\TpLink\Api\Result::ResponseData][\TpLink\Api\ErrorCode];
-                if ($Error_code != 0) {
-                    if (array_key_exists($Error_code, \TpLink\Api\Protocol::$ErrorCodes)) {
-                        $msg = \TpLink\Api\Protocol::$ErrorCodes[$Error_code];
-                    } else {
-                        $msg = $Error_code;
-                    }
+                if ($Response[\TpLink\Api\Result::ResponseData][\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
                     set_error_handler([$this, 'ModulErrorHandler']);
-                    trigger_error($this->Translate($msg), E_USER_NOTICE);
+                    trigger_error($Response[\TpLink\Api\ErrorCode] . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($Response[\TpLink\Api\ErrorCode])), E_USER_NOTICE);
                     restore_error_handler();
                     return false;
                 }
@@ -528,25 +821,33 @@ namespace TpLink
             if ($this->KlapRemoteSeed !== '') {
                 $JSON = $this->KlapEncryptedRequest($Request);
             }
-            if ($this->token !== '') {
-                $JSON = $this->EncryptedRequest($Request);
+            if ($this->TokenUrl !== '') {
+                if ($this->PwdHash != '') {
+                    if ($this->TpLinkCipherKey != '' && $this->TpLinkCipherIV != '') {
+                        $JSON = $this->SSLAESEncryptedRequest($Request);
+                    } else {
+                        $JSON = $this->LessSecureRequest($Request);
+                    }
+
+                } else {
+                    $JSON = $this->AESEncryptedRequest($Request);
+                }
             }
             if ($JSON != '') {
                 $Result = json_decode($JSON, true);
-                if ($Result[\TpLink\Api\ErrorCode] != 0) {
-                    if (array_key_exists($Result[\TpLink\Api\ErrorCode], \TpLink\Api\Protocol::$ErrorCodes)) {
-                        $msg = \TpLink\Api\Protocol::$ErrorCodes[$Result[\TpLink\Api\ErrorCode]];
-                    } else {
-                        $msg = $Result[\TpLink\Api\ErrorCode];
-                    }
+                if ($Result[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
                     set_error_handler([$this, 'ModulErrorHandler']);
-                    trigger_error($this->Translate($msg), E_USER_NOTICE);
+                    trigger_error($Result[\TpLink\Api\ErrorCode] . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($Result[\TpLink\Api\ErrorCode])), E_USER_NOTICE);
                     restore_error_handler();
                     return null;
                 }
                 if (array_key_exists(\TpLink\Api\Result, $Result)) {
                     $Result = $Result[\TpLink\Api\Result];
                 }
+            } else {
+                set_error_handler([$this, 'ModulErrorHandler']);
+                trigger_error($this->Translate('No response'), E_USER_NOTICE);
+                restore_error_handler();
             }
             return $Result;
         }
@@ -587,7 +888,6 @@ namespace TpLink
             echo $errstr . PHP_EOL;
             return true;
         }
-
         /**
          * GetModuleIdents
          *
@@ -610,10 +910,14 @@ namespace TpLink
          */
         private function InitBuffers(): void
         {
-            $this->token = '';
             $this->cookie = '';
             $this->TpLinkCipherKey = '';
             $this->TpLinkCipherIV = '';
+            $this->LocalNonce = '';
+            $this->ServerNonce = '';
+            $this->Username = '';
+            $this->PwdHash = '';
+            $this->TokenUrl = '';
             $this->KlapLocalSeed = '';
             $this->KlapRemoteSeed = '';
             $this->KlapUserHash = '';
@@ -627,23 +931,37 @@ namespace TpLink
          */
         private function Init(): bool
         {
-            switch ($this->ReadPropertyString(\TpLink\Property::Protocol)) {
+            switch ($this->ReadPropertyString(\TpLink\Property::EncryptType)) {
                 case 'AES':
-                    $Result = $this->Handshake();
-                    if ($Result === true) {
-                        if ($this->Login()) {
-                            $this->SetStatus(IS_ACTIVE);
-                            return true;
-                        }
-                        return false;
+                    switch ($this->ReadPropertyString(\TpLink\Property::Protocol)) {
+                        case \TpLink\Crypt\HTTPS:
+                            $this->Version = 3;
+                            if ($this->InitSSLAES()) {
+                                $this->SetStatus(IS_ACTIVE);
+                                return true;
+                            }
+                            return false;
+                        case \TpLink\Crypt\HTTP:
+                            $this->Version = 1;
+                            $Result = $this->HandshakeAES();
+                            if ($Result === true) {
+                                if ($this->LoginAES()) {
+                                    $this->SetStatus(IS_ACTIVE);
+                                    return true;
+                                }
+                                return false;
+                            }
+                            if ($Result === false) {
+                                $Result = -1;
+                            }
+                            set_error_handler([$this, 'ModulErrorHandler']);
+                            trigger_error($this->Translate(\TpLink\Api\ErrorCodes::getText($Result)), E_USER_NOTICE);
+                            restore_error_handler();
+                            return false;
                     }
-                    if ($Result === 1003) {
-                        set_error_handler([$this, 'ModulErrorHandler']);
-                        trigger_error($this->Translate(\TpLink\Api\Protocol::$ErrorCodes[$Result]), E_USER_NOTICE);
-                        restore_error_handler();
-                    }
-                    return false;
+                    break;
                 case 'KLAP':
+                    $this->Version = 2;
                     if ($this->InitKlap()) {
                         if ($this->HandshakeKlap()) {
                             $this->SetStatus(IS_ACTIVE);
@@ -653,7 +971,7 @@ namespace TpLink
                     return false;
             }
             set_error_handler([$this, 'ModulErrorHandler']);
-            trigger_error($this->Translate(\TpLink\Api\Protocol::$ErrorCodes[1003]), E_USER_NOTICE);
+            trigger_error($this->Translate(\TpLink\Api\ErrorCodes::getText(1003)), E_USER_NOTICE);
             restore_error_handler();
             return false;
         }
@@ -666,26 +984,41 @@ namespace TpLink
          * @param  bool $noError
          * @return false
          */
-        private function CurlRequest(string $Url, string $Payload, bool $noError = false): false|string
+        private function CurlRequest(string $Url, string $Payload, bool $noError = false, array $Headers = []): false|string
         {
+            $this->SendDebug('Curl Request', $Url, 0);
+            $Headers = array_merge([
+                'Content-Type: application/json; charset=UTF-8',
+                'requestByApp: true',
+                'Accept: application/json',
+                'Accept-Encoding: gzip, deflate',
+                'User-Agent: Tapo CameraClient Android',
+            ], $Headers);
             $ch = curl_init();
+            curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
             curl_setopt($ch, CURLOPT_URL, $Url);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $Payload);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYSTATUS, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $Headers);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 4000);
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
+            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 10000);
             curl_setopt($ch, CURLOPT_COOKIELIST, $this->cookie);
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
             $Result = curl_exec($ch);
             $HttpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $Cookie = curl_getinfo($ch, CURLINFO_COOKIELIST);
-            curl_close($ch);
             $this->CurlDebug($HttpCode);
             if ($HttpCode == 200) {
                 $this->cookie = (is_array($Cookie)) ? array_shift($Cookie) : '';
                 return $Result;
             }
+            $this->SendDebug('CURL INFO', curl_getinfo($ch), 0);
+
             if (($HttpCode == 0) && (!$noError)) {
                 $this->SetStatus(IS_EBASE + 1);
             }

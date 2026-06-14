@@ -55,9 +55,9 @@ Einbindung der TP-Link tapo SmartHome Geräte
  Smart Hub Instanz als IO Instanz zur Kommunikation mit den angelernten Funk-Geräten und Symcon.  
  Folgende Hubs werden unterstützt:  
 
-- KH100
-- H100
-- H200
+- KH100 (Kasa Hub mit integrierter Sirene)
+- H100 (Tapo Hub mit integrierter Sirene)
+- H200 (Tapo Hub mit LAN-Verbindung)
 
 ## 2. Netzwerk Geräte Instanzen
 
@@ -115,6 +115,26 @@ Zwischenstecker oder Aktor mit mehreren Kanälen und Energiemessung:
 - S112 (up Aktor, Modus Schalter)
 - S112 (up Aktor, Modus Rollladen)
 
+---
+
+### [tapo Camera](Tapo%20Camera/README.md)
+
+Überwachungskameras:
+
+- C100 (Indoor-Kamera)
+- C101 (Indoor-Kamera)
+- C110 (Indoor-Kamera)
+- C210 (Indoor-Kamera mit Nachtsicht)
+- C220 (Indoor-Kamera mit Nachtsicht)
+- C225 (Indoor-Kamera mit Nachtsicht)
+- C325WB (Wandkamera)
+- C460 (Outdoor-Kamera mit Nachtsicht)
+- C520WS (Outdoor-Kamera mit Nachtsicht)
+- C720 (Pan-Tilt-Kamera)
+- TC40 (Weitwinkel-Kamera)
+- TC65 (4K-Kamera)
+- TC70 (4K-Kamera)
+
 Weitere Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
 Hier melden für die integration von weiteren Geräten:  
 **[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
@@ -150,6 +170,13 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 # 5. Anhang
 
 ## 1. Changelog
+
+**Version 2.11:**  
+
+- Dokumentation für tapo Camera Module ergänzt.  
+- Dokumentation für tapo Hub IO 200 (H200) ergänzt.  
+- Dokumentation für tapo Hub IO 100 erweitert.  
+- README-Dateien für alle Hub-Module hinzugefügt.  
 
 **Version 2.10:**  
 

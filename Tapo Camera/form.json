@@ -1,0 +1,41 @@
+{
+    "elements": [
+        {
+            "type": "RowLayout",
+            "items": [
+                {
+                    "name": "UsernameCamera",
+                    "type": "ValidationTextBox",
+                    "caption": "Username Camera Account",
+                    "width": "300px"
+                },
+                {
+                    "name": "PasswordCamera",
+                    "type": "PasswordTextBox",
+                    "caption": "Password Camera Account"
+                },
+                {
+                    "name": "Stream",
+                    "type": "Select",
+                    "caption": "Stream",
+                    "options": [
+                        {
+                            "caption": "Main",
+                            "value": "stream1"
+                        },
+                        {
+                            "caption": "Sub",
+                            "value": "stream2"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "translations": {
+        "de": {
+            "Username Camera Account": "Benutzername Kamera Konto",
+            "Password Camera Account": "Password Kamera Konto"
+        }
+    }
+}

@@ -14,7 +14,7 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  *
  * @version       1.70
  */
-class TapoHubIO extends \TpLink\Device
+class TapoHubIO100 extends \TpLink\Device
 {
     /**
      * ApplyChanges
@@ -27,17 +27,7 @@ class TapoHubIO extends \TpLink\Device
         parent::ApplyChanges();
 
         if ($this->GetStatus() == IS_ACTIVE) {
-            $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetChildDeviceList);
-            $Response = $this->SendRequest($Request);
-            //$Response = json_decode(file_get_contents(dirname(__DIR__) . '/tests/childdeviceslist.json'), true)['result'];
-            $ChildIDs = [];
-            if ($Response !== null) {
-                foreach ($Response[\TpLink\Api\Result::ChildList] as $ChildDevice) {
-                    $ChildIDs[] = $ChildDevice[\TpLink\Api\Result::DeviceID];
-                }
-                $this->ChildIDs = $ChildIDs;
-                $this->SendDebug('Childs', $ChildIDs, 0);
-            }
+            $this->FetchChildDevices();
         }
     }
 
@@ -65,9 +55,9 @@ class TapoHubIO extends \TpLink\Device
                 }
                 $Response = $Response[\TpLink\Api\Result::ResponseData];
                 $this->SendDebug('Res', $Response, 0);
-                if ($Response[\TpLink\Api\ErrorCode] != 0) {
+                if ($Response[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
                     set_error_handler([$this, 'ModulErrorHandler']);
-                    trigger_error($this->Translate(\TpLink\Api\Protocol::$ErrorCodes[$Response[\TpLink\Api\ErrorCode]]), E_USER_NOTICE);
+                    trigger_error($Response[\TpLink\Api\ErrorCode] . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($Response[\TpLink\Api\ErrorCode])), E_USER_NOTICE);
                     restore_error_handler();
                     continue;
                 }
@@ -95,17 +85,9 @@ class TapoHubIO extends \TpLink\Device
     {
         $Data = json_decode($JSONString, true);
         $this->SendDebug('Forward', $Data, 0);
-        /*
         if ($Data[\TpLink\Api\Protocol::Method] == \TpLink\Api\Method::GetChildDeviceList) {
-            return serialize(json_decode(file_get_contents(dirname(__DIR__) . '/tests/childdeviceslist.json'), true)['result']);
+            return serialize($this->FetchChildDevices());
         }
-        if ($Data[\TpLink\Api\Protocol::Method] == \TpLink\Api\Method::SetDeviceInfo) {
-            if ($Data[\TpLink\Property::DeviceId] != '') {
-                return serialize(json_decode('{"result":{"responseData":{"error_code":0}},"error_code":0}', true)['result'][\TpLink\Api\Result::ResponseData]);
-            }
-            return serialize(json_decode('{"result":{"responseData":{"error_code":0}},"error_code":0}', true)['result']);
-        }
-         */
         $Method = $Data[\TpLink\Api\Protocol::Method];
         $Params = $Data[\TpLink\Api\Protocol::Params];
         $ChildID = $Data[\TpLink\Property::DeviceId];
@@ -124,5 +106,26 @@ class TapoHubIO extends \TpLink\Device
             }
         }
         return serialize($Response);
+    }
+
+    /**
+     * FetchChildDevices
+     *
+     * @return void
+     */
+    private function FetchChildDevices(): array
+    {
+        $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetChildDeviceList);
+        $Response = $this->SendRequest($Request);
+
+        $ChildIDs = [];
+        if ($Response !== null && isset($Response[\TpLink\Api\Result::ChildList])) {
+            foreach ($Response[\TpLink\Api\Result::ChildList] as $ChildDevice) {
+                $ChildIDs[] = $ChildDevice[\TpLink\Api\Result::DeviceID];
+            }
+        }
+        $this->ChildIDs = $ChildIDs;
+        $this->SendDebug('Childs', $ChildIDs, 0);
+        return $Response[\TpLink\Api\Result::ChildList];
     }
 }

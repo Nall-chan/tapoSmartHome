@@ -7,7 +7,23 @@
                     "name": "Open",
                     "type": "CheckBox",
                     "caption": "Open",
-                    "width": "300px"
+                    "width": "150px"
+                },
+                {
+                    "name": "Protocol",
+                    "type": "Select",
+                    "caption": "TLS",
+                    "width": "150px",
+                    "options": [
+                        {
+                            "caption": "HTTP",
+                            "value": "http://"
+                        },
+                        {
+                            "caption": "HTTPS",
+                            "value": "https://"
+                        }
+                    ]
                 },
                 {
                     "name": "Host",
@@ -38,9 +54,9 @@
                     "caption": "Password"
                 },
                 {
-                    "name": "Protocol",
+                    "name": "EncryptType",
                     "type": "Select",
-                    "caption": "Protocol",
+                    "caption": "Encryption Type",
                     "options": [
                         {
                             "caption": "KLAP",
