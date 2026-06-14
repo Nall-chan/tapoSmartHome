@@ -15,4 +15,4 @@ jobs:
         with:
           submodules: true
       - name: Run tests
-        uses: symcon/action-tests@master
+        uses: nall-chan/action-tests@master
