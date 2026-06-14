@@ -2349,6 +2349,14 @@ namespace TpLink\Components
     class Siren extends Component
     {
         public static $Variables = [
+            'Siren__siren__status' => [
+                \TpLink\IPSVarName        => 'Bell state',
+                \TpLink\IPSVarType        => VARIABLETYPE_BOOLEAN,
+                \TpLink\IPSVarPresentation=> [
+                    \TpLink\PRESENTATION => VARIABLE_PRESENTATION_SWITCH
+                ],
+                \TpLink\HasAction      => true
+            ],
             'Siren__siren__volume' => [
                 \TpLink\IPSVarName        => 'Bell volume',
                 \TpLink\IPSVarType        => VARIABLETYPE_INTEGER,
@@ -2396,7 +2404,7 @@ namespace TpLink\Components
                 \TpLink\HasAction      => true,
             ],
             'Siren__siren__siren_type' => [
-                \TpLink\IPSVarName        => 'Siren type',
+                \TpLink\IPSVarName        => 'Bell type',
                 \TpLink\IPSVarType        => VARIABLETYPE_STRING,
                 \TpLink\IPSVarPresentation=> [
                     \TpLink\PRESENTATION => VARIABLE_PRESENTATION_ENUMERATION

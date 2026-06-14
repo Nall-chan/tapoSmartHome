@@ -122,19 +122,20 @@ Zwischenstecker oder Aktor mit mehreren Kanälen und Energiemessung:
 
 Überwachungskameras:
 
-- C100 (Indoor-Kamera)
-- C101 (Indoor-Kamera)
-- C110 (Indoor-Kamera)
-- C210 (Indoor-Kamera mit Nachtsicht)
-- C220 (Indoor-Kamera mit Nachtsicht)
-- C225 (Indoor-Kamera mit Nachtsicht)
-- C325WB (Wandkamera)
-- C460 (Outdoor-Kamera mit Nachtsicht)
-- C520WS (Outdoor-Kamera mit Nachtsicht)
-- C720 (Pan-Tilt-Kamera)
-- TC40 (Weitwinkel-Kamera)
-- TC65 (4K-Kamera)
-- TC70 (4K-Kamera)
+- C100
+- C101
+- C110
+- C210
+- C220
+- C225
+- C325WB
+- C460
+- C520WS
+- C720
+- TC40
+- TC65
+- TC70
+- TC71 (Indoor, PTZ-Kamera) **getestet**
 
 Weitere Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
 Hier melden für die integration von weiteren Geräten:  
@@ -147,6 +148,7 @@ Hier melden für die integration von weiteren Geräten:
 aktuell umgesetzt und getestete Geräte:  
 
 - KE100 (Heizkörperthermostat)  
+- T110 (Kontaktsensor)  
 - T310 (Temperatur- & Feuchtigkeitssensor)  
 
 Alle restlichen Geräte können im Modul ergänzt werden, leider liegen aktuell keine Daten für diese Geräte vor.
@@ -172,16 +174,15 @@ Es wird empfohlen die Einrichtung mit der Discovery-Instanz zu starten ([tapo Di
 
 ## 1. Changelog
 
-**Version 2.11:**  
+**Version 2.20:**  
 
+- Kamera und Hub 200 Modul ergänzt.  
+- Unterstützung für HTTPS+AES (Protocol 3) Geräte hinzugefügt.  
 - Dokumentation für tapo Camera Module ergänzt.  
-- Dokumentation für tapo Hub IO 200 (H200) ergänzt.  
-- Dokumentation für tapo Hub IO 100 erweitert.  
-- README-Dateien für alle Hub-Module hinzugefügt.  
 
 **Version 2.10:**  
 
-- Symcon 9.0 ist voraussetzung.  
+- Symcon 9.0 ist Voraussetzung.  
 - UP-Aktoren S110 und S112 werden unterstützt.  
 
 **Version 2.02:**  

@@ -147,10 +147,15 @@ class TapoHubIO200 extends \TpLink\Device
                 break;
             case \TpLink\Api\MethodV3::GetSirenConfig:
                 $Variables = \TpLink\Components\Siren::$Variables;
+                unset($Variables['Siren__siren__status']);
                 $Variables['Siren__siren__volume']['Value'] = intval($Response['volume']);
                 $Variables['Siren__siren__duration']['Value'] = intval($Response['duration']);
                 $Variables['Siren__siren__siren_type'][\TpLink\IPSVarPresentation]['OPTIONS'] = $this->SirenTypePresentation;
                 $Variables['Siren__siren__siren_type']['Value'] = $Response['siren_type'];
+                break;
+            case \TpLink\Api\MethodV3::GetSirenStatus:
+                $Variables['Siren__siren__status'] = \TpLink\Components\Siren::$Variables['Siren__siren__status'];
+                $Variables['Siren__siren__status']['Value'] = $Response['status'] == 'on';
                 break;
             default:
                 return null;
@@ -170,6 +175,17 @@ class TapoHubIO200 extends \TpLink\Device
     {
         $this->SendDebug('Write Payload', ['Class' => $Class, 'Ident' => $Ident, 'Value' => $Value], 0);
         switch ($Ident) {
+            case 'Siren__siren__status':
+                $Method = \TpLink\Api\MethodV3::SetSirenStatus;
+                $WriteRequest = [
+                    \TpLink\Api\Protocol::Method=> \TpLink\Api\MethodV3::SetSirenStatus,
+                    \TpLink\Api\Protocol::Params=> [
+                        'siren'=> [
+                            'status'=> $Value ? 'on' : 'off'
+                        ]
+                    ]
+                ];
+                break;
             case 'Siren__siren__duration':
                 $Method = \TpLink\Api\MethodV3::SetSirenConfig;
                 $WriteRequest = [

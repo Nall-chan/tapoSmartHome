@@ -23,8 +23,8 @@
             "Open": "Öffnen",
             "Stop": "Stoppen",
             "Close": "Schließen",
-            "Opened":"Geöffnet",
-            "Closed":"Geschlossen",
+            "Opened": "Geöffnet",
+            "Closed": "Geschlossen",
             "Runtime today": "Laufzeit Heute",
             "Runtime month": "Laufzeit Monat",
             "Runtime today (minutes)": "Laufzeit Heute (Minuten)",
@@ -127,7 +127,11 @@
             "SD-Card linecrossing total space": "SD-Karte Linienquerung Gesamtspeicher",
             "SD-Card linecrossing free space": "SD-Karte Linienquerung freier Speicher",
             "SD-Card pushmessage total space": "SD-Karte Benachrichtigung Gesamtspeicher",
-            "SD-Card pushmessage free space": "SD-Karte Benachrichtigung freier Speicher"
+            "SD-Card pushmessage free space": "SD-Karte Benachrichtigung freier Speicher",
+            "Bell state": "Klingel Status",
+            "Bell volume": "Klingel Lautstärke",
+            "Bell duration": "Klingel Dauer",
+            "Bell type": "Klingelton"
         }
     }
 }
