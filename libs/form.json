@@ -130,6 +130,7 @@
             "Mac Address": "MAC Adresse",
             "Username": "Benutzername",
             "Password": "Passwort",
+            "Encryption Type": "Verschlüsselungstyp",
             "Protocol": "Protokoll",
             "Read interval": "Leseintervall",
             "seconds": "Sekunden",

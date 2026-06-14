@@ -1,6 +1,6 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
 [![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865)
-[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v80-v81-q3-2025/)  
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v81-v90-q1-2026/)  
 [![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Check Style](https://github.com/Nall-chan/tapoSmartHome/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)
 [![Run Tests](https://github.com/Nall-chan/tapoSmartHome/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)  
@@ -27,9 +27,11 @@
 
 - Instanz für Lampen ohne Farbe  
 
+**Hinweis**: Die Geräte müssen in der TP-Link/Tapo Cloud registriert sein, damit die lokale Anmeldung funktioniert!
+
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 6.1 
+- IP-Symcon ab Version 9.0  
 
 ## 3. Software-Installation
 
@@ -45,22 +47,23 @@ Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unte
 Damit Symcon mit den Geräten kommunizieren können, müssen diese in der TP-Link Cloud angemeldet und registriert sein.  
 Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokoll werden beim anlegen durch die [Discovery-Instanz](../Tapo%20Discovery/README.md) automatisch eingetragen.
 
- ### Konfigurationsseite <!-- omit in toc -->
+### Konfigurationsseite <!-- omit in toc -->
 
 ![Config](../imgs/conf_device.png)  
 
 **Benutzername und Passwort sind die Cloud/App Zugangsdaten!**  
 
-| Name       | Text                           | Beschreibung                                                           |
-| ---------- | ------------------------------ | ---------------------------------------------------------------------- |
-| Open       | Aktiv                          | Verbindung zu Gerät herstellen                                         |
-| Host       | Host                           | Adresse des Gerätes                                                    |
-| Mac        | MAC Adresse                    | MAC Adresse des Gerätes (benötigt die Discovery-Instanz zur Zuordnung) |
-| Protocol   | Protokoll                      | Genutztes Kommunikationsprotokoll (AES oder KLAP)                      |
-| Username   | Benutzername                   | Benutzername für die Anmeldung (TP-Cloud Benutzername: eMail-Adresse)  |
-| Password   | Passwort                       | Passwort für die Anmeldung (TP-Cloud Passwort)                         |
-| Interval   | Leseintervall                  | Intervall der Abfrage von Status und Energiewerten (in Sekunden)       |
-| AutoRename | Instanz automatisch umbenennen | Instanz erhält den Namen, welcher in der App vergeben wurde            |
+| Name        | Text                           | Beschreibung                                                           |
+| ----------- | ------------------------------ | ---------------------------------------------------------------------- |
+| Open        | Aktiv                          | Verbindung zu Gerät herstellen                                         |
+| Host        | Host                           | Adresse des Gerätes                                                    |
+| Mac         | MAC Adresse                    | MAC Adresse des Gerätes (benötigt die Discovery-Instanz zur Zuordnung) |
+| Protocol    | Protokoll                      | http:// oder https://                                                  |
+| EncryptType | Verschlüsselungstyp            | Genutztes Kommunikationsprotokoll (AES oder KLAP)                      |
+| Username    | Benutzername                   | Benutzername für die Anmeldung (TP-Cloud Benutzername: eMail-Adresse)  |
+| Password    | Passwort                       | Passwort für die Anmeldung (TP-Cloud Passwort)                         |
+| Interval    | Leseintervall                  | Intervall der Abfrage von Status und Energiewerten (in Sekunden)       |
+| AutoRename  | Instanz automatisch umbenennen | Instanz erhält den Namen, welcher in der App vergeben wurde            |
 
 ## 5. Statusvariablen
 

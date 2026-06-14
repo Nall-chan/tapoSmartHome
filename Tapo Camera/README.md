@@ -1,4 +1,11 @@
 [![SDK](https://img.shields.io/badge/Symcon-PHPModul-red.svg)](https://www.symcon.de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/)
+[![Module Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.version&label=Modul%20Version&color=blue)](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865)
+[![Symcon Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FNall-chan%2FtapoSmartHome%2Frefs%2Fheads%2Fmaster%2Flibrary.json&query=%24.compatibility.version&suffix=%3E&label=Symcon%20Version&color=green)](https://www.symcon.de/de/service/dokumentation/installation/migrationen/v81-v90-q1-2026/)  
+[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Check Style](https://github.com/Nall-chan/tapoSmartHome/workflows/Check%20Style/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)
+[![Run Tests](https://github.com/Nall-chan/tapoSmartHome/workflows/Run%20Tests/badge.svg)](https://github.com/Nall-chan/tapo-SmartHome/actions)  
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](#2-spenden)
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](#2-spenden)  
 
 # tapo Camera <!-- omit in toc -->
 
@@ -8,73 +15,98 @@ Einbindung von TP-Link Tapo Überwachungskameras
 
 - [1. Funktionsumfang](#1-funktionsumfang)
 - [2. Voraussetzungen](#2-voraussetzungen)
-- [3. Einrichtung](#3-einrichtung)
-- [4. Unterstützte Geräte](#4-unterstützte-geräte)
+- [3. Software-Installation](#3-software-installation)
+- [4. Einrichten der Instanzen in IP-Symcon](#4-einrichten-der-instanzen-in-ip-symcon)
+- [5. Statusvariablen](#5-statusvariablen)
+- [6. PHP-Befehlsreferenz](#6-php-befehlsreferenz)
+- [7. Aktionen](#7-aktionen)
+- [8. Anhang](#8-anhang)
+  - [1. Changelog](#1-changelog)
+  - [2. Spenden](#2-spenden)
+- [9. Lizenz](#9-lizenz)
 
 ## 1. Funktionsumfang
 
 - Lokale Netzwerkkommunikation mit Tapo Kameras
 - Abruf von Geräteinformationen
-- Kompatibilität mit der tapo Discovery Instanz
 
 **Hinweis**: Die Kameras müssen in der TP-Link/Tapo Cloud registriert sein, damit die lokale Anmeldung funktioniert!
 
 ## 2. Voraussetzungen
 
-- IP-Symcon ab Version 9.0
-- Tapo Kamera mit lokalen Zugangsdaten konfiguriert
-- Lokale Netzwerkkommunikation muss aktiviert sein
+- IP-Symcon ab Version 9.0  
+- Tapo Kamera mit lokalen Kamerazugangsdaten konfiguriert  
 
-## 3. Einrichtung
+## 3. Software-Installation
 
-Die Einrichtung erfolgt automatisch über die **tapo Discovery Instanz**:
+- Dieses Modul ist Bestandteil der [tapo SmartHome-Library](../README.md#3-software-installation).  
 
-1. Öffne die tapo Discovery Instanz
-2. Gib die Anmeldedaten (E-Mail und Passwort) der Tapo Cloud ein
-3. Starte die Gerätesuche ("Aktualisieren" drücken)
-4. Wähle die gewünschte Kamera aus der Liste
-5. Klicke auf "Erstellen" um die Instanz zu erzeugen
+## 4. Einrichten der Instanzen in IP-Symcon
 
-Alternative manuelle Einrichtung:
+Bei der manuellen Einrichtung ist das Modul im Dialog `Instanz hinzufügen` unter den Hersteller `TP-Link` zu finden.  
+![Instanz hinzufügen](../imgs/module.png)  
 
-1. Neue Instanz vom Typ "tapo Camera" anlegen
-2. Folgende Eigenschaften konfigurieren:
-   - **Host**: IP-Adresse oder Hostname der Kamera
-   - **Benutzername**: E-Mail-Adresse (Tapo Cloud)
-   - **Passwort**: Passwort (Tapo Cloud)
-   - **Verschlüsselung**: KLAP (Standard) oder AES
-   - **Protokoll**: HTTP oder HTTPS
-   - **Öffnen**: Aktivieren um Verbindung zu starten
+Damit Symcon mit den Geräten kommunizieren können, müssen diese in der TP-Link Cloud angemeldet und registriert sein.  
 
-## 4. Unterstützte Geräte
+Die entsprechenden Cloud-Zugangsdaten, die MAC-Adresse und das genutzte Protokoll werden beim anlegen durch die [Discovery-Instanz](../Tapo%20Discovery/README.md) automatisch eingetragen.
 
-### Indoor Kameras
+### Konfigurationsseite <!-- omit in toc -->
 
-- C100 (Indoor-Kamera Full HD)
-- C101 (Indoor-Kamera Full HD)
-- C110 (Indoor-Kamera Full HD)
-- C210 (Indoor-Kamera mit Nachtsicht)
-- C220 (Indoor-Kamera mit Nachtsicht)
-- C225 (Indoor-Kamera mit Nachtsicht)
+![Config](imgs/config.png)  
 
-### Wand- & Außenkameras
+**Benutzername und Passwort sind die Cloud/App Zugangsdaten!**  
+**Benutzername und Passwort für das Kamera Konto sind in der App einzurichten!**  
 
-- C325WB (Wandkamera)
-- C460 (Outdoor-Kamera mit Nachtsicht)
-- C520WS (Outdoor-Kamera mit Nachtsicht)
-- C720 (Pan-Tilt-Kamera)
+| Name           | Text                           | Beschreibung                                                           |
+| -------------- | ------------------------------ | ---------------------------------------------------------------------- |
+| Open           | Aktiv                          | Verbindung zu Gerät herstellen                                         |
+| Host           | Host                           | Adresse des Gerätes                                                    |
+| Mac            | MAC Adresse                    | MAC Adresse des Gerätes (benötigt die Discovery-Instanz zur Zuordnung) |
+| Protocol       | Protokoll                      | http:// oder https://                                                  |
+| EncryptType    | Verschlüsselungstyp            | Genutztes Kommunikationsprotokoll (AES oder KLAP)                      |
+| Username       | Benutzername                   | Benutzername für die Anmeldung (TP-Cloud Benutzername: eMail-Adresse)  |
+| Password       | Passwort                       | Passwort für die Anmeldung (TP-Cloud Passwort)                         |
+| Interval       | Leseintervall                  | Intervall der Abfrage von Status und Energiewerten (in Sekunden)       |
+| AutoRename     | Instanz automatisch umbenennen | Instanz erhält den Namen, welcher in der App vergeben wurde            |
+| UsernameCamera | Benutzername Kamera Konto      | Benutzername vom Kamerakonto welches in der App vergeben wurde         |
+| PasswordCamera | Password Kamera Konto          | Password vom Kamerakonto welches in der App vergeben wurde             |
 
-### 4K & Professional Kameras
+## 5. Statusvariablen
 
-- TC40 (Weitwinkel-Kamera)
-- TC65 (4K-Kamera)
-- TC70 (4K-Kamera)
+Die Statusvariablen werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
 
-Weitere Kameras können verwendet werden, falls diese mit der API kompatibel sind. Bei Fragen oder um weitere Geräte hinzuzufügen:  
-**[Symcon Community](https://community.symcon.de/t/modul-tp-link-tapo-smarthome/131865/)**
+## 6. PHP-Befehlsreferenz
 
----
+``` php
+boolean TAPOSH_RequestState(integer $InstanzID);
+```
 
-**Version**: 1.70  
-**Lizenz**: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
-**Autor**: Michael Tröger
+---  
+
+``` php
+array|false TAPOSH_GetDeviceInfo(integer $InstanzID);
+```
+
+## 7. Aktionen
+
+Es gibt keine speziellen Aktionen für dieses Modul.  
+
+## 8. Anhang
+
+### 1. Changelog
+
+[Changelog der Library](../README.md#1-changelog)
+
+### 2. Spenden
+
+  Die Library ist für die nicht kommerzielle Nutzung kostenlos, Schenkungen als Unterstützung für den Autor werden hier akzeptiert:  
+
+[![PayPal.Me](https://img.shields.io/badge/PayPal-Me-lightblue.svg)](https://paypal.me/Nall4chan)  
+
+[![Wunschliste](https://img.shields.io/badge/Wunschliste-Amazon-ff69fb.svg)](https://www.amazon.de/hz/wishlist/ls/YU4AI9AQT9F?ref_=wl_share)  
+
+## 9. Lizenz
+
+  IPS-Modul:  
+  [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)  
+  
