@@ -336,23 +336,9 @@ namespace TpLink
             }
             return $Response;
         }
+
         /**
-         * Debug_SendRequest
-         *
-         * @param  string $Method
-         * @param  array $Params
-         * @return array
-         */
-        public function Debug_SendRequest(string $Method, array $Params): ?array
-        {
-            $Request = \TpLink\Api\Protocol::BuildRequest($Method, '', $Params);
-            $Response = $this->SendRequest($Request);
-            $this->SendDebug('Request', $Request, 0);
-            $this->SendDebug('Response', $Response, 0);
-            return $Response;
-        }
-        /**
-         * Debug_SendMultipleRequest
+         * SendMultipleRequest
          *
          * @param  array $Requests
          * @return array
@@ -585,6 +571,7 @@ namespace TpLink
                 }
             }
         }
+
         /**
          * OverheatStatusToBool
          *
@@ -783,13 +770,6 @@ namespace TpLink
             return true;
         }
 
-        /*protected function SetAutOff(string $Value)
-        {
-            $Values[\TpLink\VariableIdentSocket::auto_off_remain_time] = 0;
-            $Values[\TpLink\VariableIdentSocket::auto_off_status] = 'off';
-            return $Values;
-        }*/
-
         /**
          * SendRequest
          *
@@ -888,6 +868,7 @@ namespace TpLink
             echo $errstr . PHP_EOL;
             return true;
         }
+
         /**
          * GetModuleIdents
          *

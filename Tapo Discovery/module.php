@@ -36,6 +36,13 @@ class TapoDiscovery extends IPSModuleStrict
         $this->RegisterAttributeString(\TpLink\Attribute::Password, '');
     }
 
+    /**
+     * RequestAction
+     *
+     * @param  string $Ident
+     * @param  mixed $Value
+     * @return void
+     */
     public function RequestAction(string $Ident, mixed $Value): void
     {
         if ($Ident == 'Save') {

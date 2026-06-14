@@ -32,6 +32,12 @@ class TapoHubIO200 extends \TpLink\Device
             $this->FetchChildDevices();
         }
     }
+
+    /**
+     * RequestState
+     *
+     * @return bool
+     */
     public function RequestState(): bool
     {
         if (parent::GetDeviceInfo()) {
@@ -72,6 +78,7 @@ class TapoHubIO200 extends \TpLink\Device
         }
         return false;
     }
+
     /**
      * ForwardData
      *
@@ -113,6 +120,14 @@ class TapoHubIO200 extends \TpLink\Device
         }
         return serialize($Response);
     }
+
+    /**
+     * processSpecialReadResponse
+     *
+     * @param  string $Method
+     * @param  array $Response
+     * @return array
+     */
     protected function processSpecialReadResponse(string $Method, array $Response): ?array
     {
         $Variables = [];
@@ -142,6 +157,15 @@ class TapoHubIO200 extends \TpLink\Device
         }
         return $Variables;
     }
+
+    /**
+     * processSpecialWritePayload
+     *
+     * @param  string $Class
+     * @param  string $Ident
+     * @param  mixed $Value
+     * @return bool
+     */
     protected function processSpecialWritePayload(string $Class, string $Ident, mixed $Value): bool
     {
         $this->SendDebug('Write Payload', ['Class' => $Class, 'Ident' => $Ident, 'Value' => $Value], 0);
@@ -184,7 +208,7 @@ class TapoHubIO200 extends \TpLink\Device
                         'start_index' => 0
                     ]
                 ]
-            ],
+            ]/*,
             [
                 \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetChildDeviceComponentList,
                 \TpLink\Api\Protocol::Params => [
@@ -192,7 +216,7 @@ class TapoHubIO200 extends \TpLink\Device
                         'start_index' => 0
                     ]
                 ]
-            ]
+            ]*/
         ]);
         $ChildIDs = [];
         $ChildData = [];

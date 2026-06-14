@@ -24,6 +24,11 @@ namespace TpLink\Api
     const InnerErrorCode = 'code';
     const Result = 'result';
 
+    /**
+     * Method
+     *
+     * nicht für HTTPS+AES -> siehe MethodV3
+     */
     class Method
     {
         // Connection
@@ -66,6 +71,11 @@ namespace TpLink\Api
         public const CountdownRule = 'add_countdown_rule'; // todo wie löschen?
     }
 
+    /**
+     * MethodV3
+     *
+     * nur für HTTPS+AES
+     */
     class MethodV3
     {
         public const GetDeviceInfo = 'getDeviceInfo';
@@ -202,7 +212,6 @@ namespace TpLink\Api
         // App Component Results
         public const AppComponentList = 'app_component_list';
         public const ComponentName = 'name';
-        public const ComponentNeedsAuth = 'needs_auth';
     }
 
     class DeviceMode
@@ -272,10 +281,15 @@ namespace TpLink\Api
         public const Params = 'params';
         private const ParamHandshakeKey = 'key';
         private const DiscoveryKey = 'rsa_key';
-        //private const requestTimeMils = 'requestTimeMils';
         private const requestTimeMils = 'request_time_milis';
         private const TerminalUUID = 'terminalUUID';
 
+        /**
+         * BuildHandshakeRequest
+         *
+         * @param  string $publicKey
+         * @return string
+         */
         public static function BuildHandshakeRequest(string $publicKey): string
         {
             return json_encode([
@@ -288,6 +302,12 @@ namespace TpLink\Api
             ]);
         }
 
+        /**
+         * BuildMultipleRequest
+         *
+         * @param  array $Requests
+         * @return array
+         */
         public static function BuildMultipleRequest(array $Requests): array
         {
             return [
@@ -298,6 +318,15 @@ namespace TpLink\Api
                 self::requestTimeMils => (round(time() * 1000))
             ];
         }
+
+        /**
+         * BuildRequest
+         *
+         * @param  string $Method
+         * @param  string $TerminalUUID
+         * @param  array $Params
+         * @return array
+         */
         public static function BuildRequest(string $Method, string $TerminalUUID = '', array $Params = []): array
         {
             $Request = [
@@ -314,6 +343,12 @@ namespace TpLink\Api
             return $Request;
         }
 
+        /**
+         * BuildDiscoveryRequest
+         *
+         * @param  string $publicKey
+         * @return string
+         */
         public static function BuildDiscoveryRequest(string $publicKey): string
         {
             return json_encode([
@@ -352,7 +387,7 @@ namespace TpLink\Components
         protected const MsgPush = 'msgPush';
 
         // SmartCam Components
-        protected const RecordDownload = 'recordDownload';
+        //protected const RecordDownload = 'recordDownload';
         protected const Led = 'led';
         protected const LensMask = 'lensMask';
         protected const Battery = 'battery';
@@ -386,10 +421,24 @@ namespace TpLink\Components
             self::Ptz,
             self::Siren,
         ];
+
+        /**
+         * isComponentNameValid
+         *
+         * @param  string $ComponentName
+         * @return bool
+         */
         public static function isComponentNameValid(string $ComponentName): bool
         {
             return in_array($ComponentName, self::$Classes);
         }
+
+        /**
+         * getClass
+         *
+         * @param  string $ComponentName
+         * @return object
+         */
         public static function getClass(string $ComponentName): object
         {
             if (in_array($ComponentName, self::$Classes)) {
@@ -400,16 +449,35 @@ namespace TpLink\Components
             }
             throw new \InvalidArgumentException("Class not found for component: $ComponentName");
         }
+
+        /**
+         * getComponentName
+         *
+         * @return string
+         */
         public function getComponentName(): string
         {
             $reflect = new \ReflectionClass($this);
             return ucwords($reflect->getShortName());
         }
 
+        /**
+         * getReadRequest
+         *
+         * @return array
+         */
         public static function getReadRequest(): array
         {
             return isset(static::$ReadRequest[\TpLink\Api\Protocol::Method]) ? [static::$ReadRequest] : static::$ReadRequest;
         }
+
+        /**
+         * getWriteRequest
+         *
+         * @param  array $ModuleIndexes
+         * @param  mixed $ModuleValue
+         * @return array
+         */
         public static function getWriteRequest(array $ModuleIndexes, bool|int|float|string|array $ModuleValue): array
         {
             if (empty(static::$WriteRequest)) {
@@ -420,6 +488,13 @@ namespace TpLink\Components
             ]);
         }
 
+        /**
+         * processReadResponse
+         *
+         * @param  array $Response
+         * @param  string $Prefix
+         * @return array
+         */
         public static function processReadResponse(array $Response, string $Prefix = ''): array
         {
             $Idents = [];
@@ -435,6 +510,13 @@ namespace TpLink\Components
             return $Idents;
         }
 
+        /**
+         * getWriteRequestParams
+         *
+         * @param  array $ModuleIndexes
+         * @param  mixed $ModuleValue
+         * @return array
+         */
         protected static function getWriteRequestParams(array $ModuleIndexes, bool|int|float|string|array $ModuleValue): array
         {
             $WriteRequestParams = $ModuleValue;
@@ -445,6 +527,7 @@ namespace TpLink\Components
         }
 
     }
+
     class SdCard extends Component
     {
         public static $Variables = [
@@ -2379,6 +2462,13 @@ namespace TpLink
             self::KasaHub => GUID::Hub100,
             self::Hub     => GUID::Hub200
         ];
+
+        /**
+         * GetGuidByDeviceType
+         *
+         * @param  string $Type
+         * @return string
+         */
         public static function GetGuidByDeviceType(string $Type): string
         {
             $Type = explode('.', $Type)[1] ?? '';
@@ -2388,6 +2478,10 @@ namespace TpLink
             return '';
         }
     }
+
+    /**
+     * DeviceModel
+     */
     class DeviceModel
     {
         public const PlugP100 = 'P100'; // WLAN-Steckdose
@@ -2568,6 +2662,13 @@ namespace TpLink
             self::HubConfigurator,
             self::Camera
         ];
+
+        /**
+         * GuidIsHub
+         *
+         * @param  string $Guid
+         * @return bool
+         */
         public static function GuidIsHub(string $Guid): bool
         {
             return in_array($Guid, [self::Hub100, self::Hub200]);

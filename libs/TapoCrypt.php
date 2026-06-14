@@ -112,10 +112,6 @@ namespace TpLink\Crypt
         }
     }
 
-    class SSLAESCipher
-    {
-    }
-
     /**
      * @property string $LocalNonce
      * @property string $ServerNonce
@@ -394,6 +390,7 @@ namespace TpLink\Crypt
             return $ErrorCode;
         }
     }
+
     /**
      * AESCipher
      */
@@ -572,6 +569,7 @@ namespace TpLink\Crypt
             $this->SendDebug('Response', $decryptedResponse, 0);
             return $decryptedResponse;
         }
+
         /**
          * LessSecureRequest
          *
@@ -603,6 +601,7 @@ namespace TpLink\Crypt
             return $Result;
         }
     }
+
     /**
      * KlapCipher
      */

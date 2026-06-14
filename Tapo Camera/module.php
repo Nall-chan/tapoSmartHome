@@ -56,6 +56,11 @@ class TapoCamera extends \TpLink\Device
         }
     }
 
+    /**
+     * RequestState
+     *
+     * @return bool
+     */
     public function RequestState(): bool
     {
         if (parent::GetDeviceInfo()) {
@@ -64,6 +69,7 @@ class TapoCamera extends \TpLink\Device
         }
         return false;
     }
+
     /**
      * GetConfigurationForm
      *
@@ -81,6 +87,13 @@ class TapoCamera extends \TpLink\Device
         return json_encode($Form);
     }
 
+    /**
+     * processSpecialReadResponse
+     *
+     * @param  string $Method
+     * @param  array $Response
+     * @return array
+     */
     protected function processSpecialReadResponse(string $Method, array $Response): ?array
     {
         $Variables = [];
@@ -170,6 +183,14 @@ class TapoCamera extends \TpLink\Device
         return $Variables;
     }
 
+    /**
+     * processSpecialWritePayload
+     *
+     * @param  string $Class
+     * @param  string $Ident
+     * @param  mixed $Value
+     * @return bool
+     */
     protected function processSpecialWritePayload(string $Class, string $Ident, mixed $Value): bool
     {
         $this->SendDebug('Write Payload', ['Class' => $Class, 'Ident' => $Ident, 'Value' => $Value], 0);
@@ -225,10 +246,23 @@ class TapoCamera extends \TpLink\Device
         }
         return true;
     }
+
+    /**
+     * SetMedia
+     *
+     * @param  string $StreamURL
+     * @return void
+     */
     protected function SetMedia(string $StreamURL): void
     {
         IPS_SetMediaFile($this->GetMediaId(), $StreamURL, false);
     }
+
+    /**
+     * GetMediaId
+     *
+     * @return int
+     */
     protected function GetMediaId(): int
     {
         $MediaId = $this->FindIDForIdent('STREAM');
