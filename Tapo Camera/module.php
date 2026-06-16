@@ -63,7 +63,7 @@ class TapoCamera extends \TpLink\Device
      */
     public function RequestState(): bool
     {
-        if (parent::GetDeviceInfo()) {
+        if (parent::RequestState()) {
             $this->FetchAppComponents();
             return true;
         }

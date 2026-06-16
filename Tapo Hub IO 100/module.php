@@ -38,8 +38,8 @@ class TapoHubIO100 extends \TpLink\Device
      */
     public function RequestState(): bool
     {
-        $Result = $this->GetDeviceInfo(); // Eigene Vars des Hub laden und an Child senden
-        if ($Result) {
+        //$Result = $this->GetDeviceInfo(); // Eigene Vars des Hub laden und an Child senden
+        if (parent::RequestState()) {
             // todo eigene Daten an Hub Device senden
 
             foreach ($this->ChildIDs as $ChildID) {

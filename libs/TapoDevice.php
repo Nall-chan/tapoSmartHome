@@ -139,7 +139,9 @@ namespace TpLink
                         $this->SetStatus(IS_EBASE + 1);
                     }
                     $this->SetTimerInterval(\TpLink\Timer::RequestState, $this->ReadPropertyInteger(\TpLink\Property::Interval) * 1000);
-                    $this->FetchAppComponents();
+                    if ($this->Version == 3) {
+                        $this->FetchAppComponents();
+                    }
                     return;
                 }
             } else {
@@ -321,7 +323,7 @@ namespace TpLink
                         }
                     }
                 }
-                return $Response;
+                return isset($Response[\TpLink\Api\MethodV3::GetDeviceInfo]) ? $Response : false;
             }
             $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\Method::GetDeviceInfo);
             $Response = $this->SendRequest($Request);

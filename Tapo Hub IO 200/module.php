@@ -40,7 +40,7 @@ class TapoHubIO200 extends \TpLink\Device
      */
     public function RequestState(): bool
     {
-        if (parent::GetDeviceInfo()) {
+        if (parent::RequestState()) {
             $this->FetchAppComponents();
             foreach ($this->ChildIDs as $ChildID) {
                 $Params = [
