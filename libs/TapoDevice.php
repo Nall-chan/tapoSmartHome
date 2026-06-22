@@ -289,6 +289,7 @@ namespace TpLink
             $Result = $this->GetDeviceInfo();
             if (is_array($Result)) {
                 $this->SetVariables($Result);
+                $this->SendDebug('TRUE', 'TRUE', 0);
                 return true;
             }
             return false;
@@ -314,13 +315,10 @@ namespace TpLink
                         ]
                     ]
                 ]);
-                if (isset($Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'])) {
-                    $Response = $Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'];
-                    if (array_key_exists(\TpLink\Api\Result::DeviceAlias, $Response)) {
-                        $Name = $Response[\TpLink\Api\Result::DeviceAlias];
-                        if ($this->ReadPropertyBoolean(\TpLink\Property::AutoRename) && (IPS_GetName($this->InstanceID) != $Name) && ($Name != '')) {
-                            IPS_SetName($this->InstanceID, $Name);
-                        }
+                if (isset($Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'][\TpLink\Api\Result::DeviceAlias])) {
+                    $Name = $Response[\TpLink\Api\MethodV3::GetDeviceInfo]['device_info']['basic_info'][\TpLink\Api\Result::DeviceAlias];
+                    if ($this->ReadPropertyBoolean(\TpLink\Property::AutoRename) && (IPS_GetName($this->InstanceID) != $Name) && ($Name != '')) {
+                        IPS_SetName($this->InstanceID, $Name);
                     }
                 }
                 return isset($Response[\TpLink\Api\MethodV3::GetDeviceInfo]) ? $Response : false;

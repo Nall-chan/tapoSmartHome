@@ -120,7 +120,56 @@ class TapoHubIO200 extends \TpLink\Device
         }
         return serialize($Response);
     }
-
+    public function StartSiren(int $Duration, int $Volume, string $SirenType): bool
+    {
+        $Response = $this->SendMultipleRequest(
+            [
+                [
+                    \TpLink\Api\Protocol::Method=> \TpLink\Api\MethodV3::GetSirenConfig,
+                    \TpLink\Api\Protocol::Params=> [
+                        'siren'=> new stdClass()
+                    ]
+                ],
+                [
+                    \TpLink\Api\Protocol::Method=> \TpLink\Api\MethodV3::SetSirenConfig,
+                    \TpLink\Api\Protocol::Params=> [
+                        'siren'=> [
+                            'duration'  => $Duration,
+                            'volume'    => (string) $Volume,
+                            'siren_type'=> $SirenType
+                        ]
+                    ]
+                ],
+                [
+                    \TpLink\Api\Protocol::Method=> \TpLink\Api\MethodV3::SetSirenStatus,
+                    \TpLink\Api\Protocol::Params=> [
+                        'siren'=> [
+                            'status'=> 'on'
+                        ]
+                    ]
+                ]
+            ]
+        );
+        $this->SendDebug('Write Response', $Response, 0);
+        if (isset($Response[\TpLink\Api\MethodV3::GetSirenConfig])) {
+            $Response2 = $this->SendMultipleRequest(
+                [
+                    [
+                        \TpLink\Api\Protocol::Method=> \TpLink\Api\MethodV3::SetSirenConfig,
+                        \TpLink\Api\Protocol::Params=> [
+                            'siren'=> [
+                                'duration'  => intval($Response[\TpLink\Api\MethodV3::GetSirenConfig]['duration']),
+                                'volume'    => $Response[\TpLink\Api\MethodV3::GetSirenConfig]['volume'],
+                                'siren_type'=> $Response[\TpLink\Api\MethodV3::GetSirenConfig]['siren_type']
+                            ]
+                        ]
+                    ]
+                ]
+            );
+            return isset($Response2[\TpLink\Api\MethodV3::SetSirenConfig]) && (isset($Response2[\TpLink\Api\MethodV3::SetSirenStatus]));
+        }
+        return false;
+    }
     /**
      * processSpecialReadResponse
      *
@@ -204,7 +253,6 @@ class TapoHubIO200 extends \TpLink\Device
         if (isset($Response[$Method])) {
             $this->SendDebug('Write Response', $Response, 0);
             $this->SetValue($Ident, $Value);
-            return true;
         }
         return true;
     }

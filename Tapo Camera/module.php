@@ -242,7 +242,6 @@ class TapoCamera extends \TpLink\Device
         if (isset($Response[$Method])) {
             $this->SendDebug('Write Response', $Response, 0);
             $this->SetValue($Ident, $Value);
-            return true;
         }
         return true;
     }
