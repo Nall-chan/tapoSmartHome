@@ -14,15 +14,16 @@ Einbindung der TP-Link tapo SmartHome Geräte
 ## Inhaltsverzeichnis <!-- omit in toc -->
 
 - [1. Funktionsumfang](#1-funktionsumfang)
-  - [Zur Library](#zur-library)
-  - [Zur Integration von Geräten](#zur-integration-von-geräten)
+  - [Vorbemerkungen](#vorbemerkungen)
+    - [Zur Library](#zur-library)
+    - [Zur Integration von Geräten](#zur-integration-von-geräten)
 - [2. Voraussetzungen](#2-voraussetzungen)
 - [3. Software-Installation](#3-software-installation)
 - [4. Enthaltende Module](#4-enthaltende-module)
   - [1. Nicht Geräte Instanzen](#1-nicht-geräte-instanzen)
     - [tapo Discovery](#tapo-discovery)
     - [tapo Hub Configurator](#tapo-hub-configurator)
-    - [tapo Hub IO](#tapo-hub-io-io-100-io-200)
+    - [tapo Hub IO (IO 100, IO 200)](#tapo-hub-io-io-100-io-200)
   - [2. Netzwerk Geräte Instanzen](#2-netzwerk-geräte-instanzen)
     - [tapo Light](#tapo-light)
     - [tapo Light Color](#tapo-light-color)
@@ -216,34 +217,18 @@ Hier melden für die integration von weiteren Geräten:
 > Lehnt ein Gerät die Anmeldung ab (z. B. falsches oder geändertes Kennwort), versucht das Modul es nach 60 Sekunden noch einmal und meldet danach nicht mehr automatisch an. Die Instanz zeigt dann den neuen Status `Anmeldung abgelehnt`. Nach dem Korrigieren der Zugangsdaten die Konfiguration übernehmen, dann wird wieder angemeldet.
 > Debug-Mitschnitte aus älteren Versionen können Passwörter (Discovery), Hashes und Tokens enthalten und sollten nicht weitergegeben werden.
 
-**Neue Funktionen und Aktionen**
-
 - tapo Hub Device: Bewegungsmelder T100 und Wasserlecksensor T300 werden unterstützt (nach Daten anderer Projekte, noch nicht an Geräten getestet).
-
-**Neue Statusvariablen**
-
-- tapo Hub Device (T100): Bewegung. (T300): Wasserleck und Alarm.
-
-**Geändertes Verhalten**
-
 - Anmeldung: Bei abgelehnter Anmeldung wird nicht mehr im Sekundentakt neu angemeldet, damit sich Geräte nicht selbst sperren. Neuer Status `Anmeldung abgelehnt` (202).
 - tapo Hub IO 200: Der Zustand aller angelernten Geräte wird mit einer Anfrage statt einer Anfrage je Gerät gelesen, die Fähigkeiten des Hubs (Sirene, LED, SD-Karte) höchstens alle 30 Sekunden. Kontakt- und Bewegungsmelder lassen sich dadurch mit einem kurzen Leseintervall (z. B. 2 Sekunden) zeitnah abfragen.
 - Passwörter, Hashes und Tokens werden nicht mehr im Debug ausgegeben.
-
-**Fehlerbehebungen**
-
 - tapo Discovery: Bei mehreren Netzwerkadaptern (z. B. zusätzlich virtuelle Adapter) wurden keine Geräte gefunden.
 - tapo Discovery: Das Passwort erschien im Debug im Klartext.
 - tapo Hub IO 200: `TAPOSH_StartSiren` lieferte immer `false`.
 - Instanzen konnten beim Neuladen des Moduls mit einem Fehler abbrechen.
+  
 **Version 2.22:**  
 
-**Neue Funktionen und Aktionen**  
-
 - tapo Hub IO 200: Sirene des Hubs kann per PHP-Funktion `TAPOSH_StartSiren` gestartet werden.  
-
-**Fehlerbehebungen**  
-
 - tapo Camera: Diverse Fehler behoben.  
 
 **Version 2.21:**  
