@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Enthält die Basisklasse für Netzwerk-Geräte.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  */
 
 namespace {
@@ -32,10 +32,10 @@ namespace TpLink
      * Erweitert IPSModule.
      *
      * @author        Michael Tröger <micha@nall-chan.net>
-     * @copyright     2024 Michael Tröger
-     * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+     * @copyright     2024-2026 Michael Tröger
+     * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
      *
-     * @version       1.70
+     * @version       2.23
      *
      * @property string $terminalUUID
      * @property string $cookie
@@ -52,6 +52,10 @@ namespace TpLink
      * @property string $TokenUrl
      * @property string[] $ChildIDs
      * @property int $Version
+     * @property int $AuthFailures Abgelehnte Anmeldungen in Folge
+     * @property int $AuthBlockedUntil Zeitstempel, vor dem nicht angemeldet wird (PHP_INT_MAX = bis zur Konfiguration gestoppt)
+     * @property bool $ConnectFailed Gerät hat auf die letzte Anmeldung nicht geantwortet
+     * @property int $LoginAttemptsLeft Laut Gerät verbleibende Anmeldeversuche, -1 unbekannt
      *
      * @method void RegisterAttributeArray(string $Name, array $Value, int $Size = 0)
      * @method array ReadAttributeArray(string $Name)
@@ -98,6 +102,7 @@ namespace TpLink
             $this->InitBuffers();
             $this->ChildIDs = [];
             $this->Version = 0;
+            $this->ResetLoginGuard();
         }
 
         /**
@@ -133,6 +138,8 @@ namespace TpLink
             $this->SetTimerInterval(\TpLink\Timer::RequestState, 0);
             $this->SetSummary($this->ReadPropertyString(\TpLink\Property::Host));
             $this->InitBuffers();
+            // Übernehmen der Konfiguration (z. B. neues Kennwort) erlaubt wieder einen Anmeldeversuch
+            $this->ResetLoginGuard();
             if ($this->ReadPropertyBoolean(\TpLink\Property::Open)) {
                 if ($this->ReadPropertyString(\TpLink\Property::Host) != '') {
                     if (!$this->Init()) {
@@ -289,7 +296,6 @@ namespace TpLink
             $Result = $this->GetDeviceInfo();
             if (is_array($Result)) {
                 $this->SetVariables($Result);
-                $this->SendDebug('TRUE', 'TRUE', 0);
                 return true;
             }
             return false;
@@ -681,6 +687,10 @@ namespace TpLink
          */
         protected function SetStatus($Status): bool
         {
+            // Antwortet das Gerät, lehnt aber die Anmeldung ab, ist "Anmeldung abgelehnt" die richtige Meldung
+            if ((($Status == (IS_EBASE + 1)) && ((int) $this->AuthFailures > 0)) && !$this->ConnectFailed) {
+                $Status = IS_EBASE + 2;
+            }
             if ($Status != IS_ACTIVE) {
                 $this->InitBuffers();
             }
@@ -783,9 +793,12 @@ namespace TpLink
             if ($this->GetStatus() != IS_ACTIVE) {
                 if ($this->ReadPropertyBoolean(\TpLink\Property::Open)) {
                     if (!$this->Init()) {
-                        set_error_handler([$this, 'ModulErrorHandler']);
-                        trigger_error($this->Translate('Error on reconnect'), E_USER_NOTICE);
-                        restore_error_handler();
+                        // Während der Pause nach abgelehnter Anmeldung keine Meldung bei jedem Zyklus
+                        if (!$this->LoginPaused()) {
+                            set_error_handler([$this, 'ModulErrorHandler']);
+                            trigger_error($this->Translate('Error on reconnect'), E_USER_NOTICE);
+                            restore_error_handler();
+                        }
                         $this->SetStatus(IS_EBASE + 1);
                         return null;
                     }
@@ -798,10 +811,10 @@ namespace TpLink
             }
             $Result = null;
             $JSON = '';
-            if ($this->KlapRemoteSeed !== '') {
+            if ((string) $this->KlapRemoteSeed !== '') {
                 $JSON = $this->KlapEncryptedRequest($Request);
             }
-            if ($this->TokenUrl !== '') {
+            if ((string) $this->TokenUrl !== '') {
                 if ($this->PwdHash != '') {
                     if ($this->TpLinkCipherKey != '' && $this->TpLinkCipherIV != '') {
                         $JSON = $this->SSLAESEncryptedRequest($Request);
@@ -906,11 +919,76 @@ namespace TpLink
         }
 
         /**
+         * ResetLoginGuard
+         *
+         * @return void
+         */
+        private function ResetLoginGuard(): void
+        {
+            $this->AuthFailures = 0;
+            $this->AuthBlockedUntil = 0;
+            $this->ConnectFailed = false;
+            $this->LoginAttemptsLeft = -1;
+        }
+
+        /**
+         * LoginPaused
+         *
+         * @return bool true, wenn nach einer abgelehnten Anmeldung (noch) nicht erneut angemeldet wird
+         */
+        private function LoginPaused(): bool
+        {
+            return (int) $this->AuthBlockedUntil > time();
+        }
+
+        /**
          * Init
+         *
+         * Baut die Verbindung auf. Lehnt das Gerät die Anmeldung ab (es antwortet, aber die Zugangsdaten
+         * passen nicht), wird nach einer Pause einmal wiederholt und dann nicht mehr automatisch angemeldet,
+         * damit sich das Gerät nicht wegen zu vieler Fehlversuche sperrt. Ein Übernehmen der Konfiguration setzt das zurück.
+         * Ist das Gerät nicht erreichbar, wird nicht gesperrt.
          *
          * @return bool
          */
         private function Init(): bool
+        {
+            if ($this->LoginPaused()) {
+                $this->SendDebug('Login paused', 'until ' . (((int) $this->AuthBlockedUntil == PHP_INT_MAX) ? 'configuration is applied' : date('H:i:s', (int) $this->AuthBlockedUntil)), 0);
+                return false;
+            }
+            $this->ConnectFailed = false;
+            if ($this->InitConnection()) {
+                $this->AuthFailures = 0;
+                $this->AuthBlockedUntil = 0;
+                $this->LoginAttemptsLeft = -1;
+                return true;
+            }
+            if ($this->ConnectFailed) {
+                return false;
+            }
+            $Rejections = (int) $this->AuthFailures + 1;
+            $this->AuthFailures = $Rejections;
+            $Pause = \TpLink\LoginGuard::GetPause($Rejections, (int) $this->LoginAttemptsLeft);
+            $this->AuthBlockedUntil = ($Pause === null) ? PHP_INT_MAX : (time() + $Pause);
+            $this->SendDebug('Login rejected', ['Rejections' => $Rejections, 'AttemptsLeft' => $this->LoginAttemptsLeft, 'Pause' => $Pause], 0);
+            set_error_handler([$this, 'ModulErrorHandler']);
+            if ($Pause === null) {
+                trigger_error($this->Translate('Login rejected. Automatic login stopped, please check username and password and apply the configuration.'), E_USER_NOTICE);
+            } else {
+                trigger_error(sprintf($this->Translate('Login rejected. Next attempt in %d seconds.'), $Pause), E_USER_NOTICE);
+            }
+            restore_error_handler();
+            $this->SetStatus(IS_EBASE + 2);
+            return false;
+        }
+
+        /**
+         * InitConnection
+         *
+         * @return bool
+         */
+        private function InitConnection(): bool
         {
             switch ($this->ReadPropertyString(\TpLink\Property::EncryptType)) {
                 case 'AES':
@@ -967,7 +1045,7 @@ namespace TpLink
          */
         private function CurlRequest(string $Url, string $Payload, bool $noError = false, array $Headers = []): false|string
         {
-            $this->SendDebug('Curl Request', $Url, 0);
+            $this->SendDebug('Curl Request', \TpLink\Api\Protocol::MaskUrl($Url), 0);
             $Headers = array_merge([
                 'Content-Type: application/json; charset=UTF-8',
                 'requestByApp: true',
@@ -998,8 +1076,14 @@ namespace TpLink
                 $this->cookie = (is_array($Cookie)) ? array_shift($Cookie) : '';
                 return $Result;
             }
-            $this->SendDebug('CURL INFO', curl_getinfo($ch), 0);
+            $CurlInfo = curl_getinfo($ch);
+            $CurlInfo['url'] = \TpLink\Api\Protocol::MaskUrl((string) ($CurlInfo['url'] ?? ''));
+            unset($CurlInfo['request_header']);
+            $this->SendDebug('CURL INFO', $CurlInfo, 0);
 
+            if ($HttpCode == 0) {
+                $this->ConnectFailed = true;
+            }
             if (($HttpCode == 0) && (!$noError)) {
                 $this->SetStatus(IS_EBASE + 1);
             }

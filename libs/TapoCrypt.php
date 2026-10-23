@@ -7,10 +7,10 @@ declare(strict_types=1);
  * Enthält Klassen und Traits für IPSModule-Klasse zur Kommunikation mit Netzwerk-Geräten.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  */
 
 namespace {
@@ -159,14 +159,15 @@ namespace TpLink\Crypt
                     \TpLink\Api\Param::Username   => $Username
                 ]
             ));
-            $this->SendDebug(__FUNCTION__, $Payload, 0);
+            $this->SendDebug(__FUNCTION__, \TpLink\Api\Protocol::MaskSensitive($Payload), 0);
             $Result = $this->CurlRequest($Url, $Payload);
             if ($Result === false) {
                 return 2;
             }
             $Response = json_decode($Result, true);
-            $this->SendDebug(__FUNCTION__ . ' Result', $Result, 0);
-            $this->SendDebug(__FUNCTION__ . ' Result', $Response, 0);
+            $this->SendDebug(__FUNCTION__ . ' Result', \TpLink\Api\Protocol::MaskSensitive($Result), 0);
+            $this->SendDebug(__FUNCTION__ . ' Result', \TpLink\Api\Protocol::MaskSensitive($Response), 0);
+            $this->LoginAttemptsLeft = \TpLink\LoginGuard::GetAttemptsLeft(is_array($Response) ? $Response : null);
             if (
                 $Response != null &&
                 self::isLessSecureLogin($Response) &&
@@ -209,7 +210,7 @@ namespace TpLink\Crypt
                 $pwd_hash = strtoupper(hash('sha256', mb_convert_encoding($Password, 'UTF-8')));
                 $confirm_hash = strtoupper(hash('sha256', $LocalNonce . $pwd_hash . $server_nonce) . $server_nonce . $LocalNonce);
                 if ($device_confirm != '' && hash_equals($confirm_hash, $device_confirm)) {
-                    $this->SendDebug('PWD sha256', $pwd_hash, 0);
+                    $this->SendDebug('PWD sha256', \TpLink\Api\Protocol::MaskValue($pwd_hash), 0);
                     $this->Username = $Username;
                     $this->PwdHash = $pwd_hash;
                     $this->LocalNonce = $LocalNonce;
@@ -219,7 +220,7 @@ namespace TpLink\Crypt
                 $pwd_hash = strtoupper(hash('md5', mb_convert_encoding($Password, 'UTF-8')));
                 $confirm_hash = strtoupper(hash('sha256', $LocalNonce . $pwd_hash . $server_nonce) . $server_nonce . $LocalNonce);
                 if ($device_confirm != '' && hash_equals($confirm_hash, $device_confirm)) {
-                    $this->SendDebug('PWD md5', $pwd_hash, 0);
+                    $this->SendDebug('PWD md5', \TpLink\Api\Protocol::MaskValue($pwd_hash), 0);
                     $this->Username = $Username;
                     $this->PwdHash = $pwd_hash;
                     $this->LocalNonce = $LocalNonce;
@@ -248,14 +249,14 @@ namespace TpLink\Crypt
                     \TpLink\Api\Param::Username          => $this->Username
                 ]
             ));
-            $this->SendDebug(__FUNCTION__, $Payload, 0);
+            $this->SendDebug(__FUNCTION__, \TpLink\Api\Protocol::MaskSensitive($Payload), 0);
             $Result = $this->CurlRequest($Url, $Payload);
             if ($Result === false) {
                 return false;
             }
             $Response = json_decode($Result, true);
-            $this->SendDebug(__FUNCTION__ . ' Result', $Result, 0);
-            $this->SendDebug(__FUNCTION__ . ' Result', $Response, 0);
+            $this->SendDebug(__FUNCTION__ . ' Result', \TpLink\Api\Protocol::MaskSensitive($Result), 0);
+            $this->SendDebug(__FUNCTION__ . ' Result', \TpLink\Api\Protocol::MaskSensitive($Response), 0);
             if (
                 $Response == null
             ) {
@@ -304,14 +305,14 @@ namespace TpLink\Crypt
                     \TpLink\Api\Param::Password   => $pwd_hash
                 ]
             ));
-            $this->SendDebug(__FUNCTION__ . ' Less Secure Payload', $Payload, 0);
+            $this->SendDebug(__FUNCTION__ . ' Less Secure Payload', \TpLink\Api\Protocol::MaskSensitive($Payload), 0);
             $Result = $this->CurlRequest($Url, $Payload);
             if ($Result === false) {
                 return false;
             }
-            $this->SendDebug(__FUNCTION__ . ' Less Secure Result', $Result, 0);
+            $this->SendDebug(__FUNCTION__ . ' Less Secure Result', \TpLink\Api\Protocol::MaskSensitive($Result), 0);
             $Response = json_decode($Result, true);
-            $this->SendDebug(__FUNCTION__ . ' Less Secure Result', $Response, 0);
+            $this->SendDebug(__FUNCTION__ . ' Less Secure Result', \TpLink\Api\Protocol::MaskSensitive($Response), 0);
             if ($Response != null && isset($Response[\TpLink\Api\ErrorCode]) && $Response[\TpLink\Api\ErrorCode] == \TpLink\Api\ErrorCodes::Success) {
                 $this->TokenUrl = $Url . '/stok=' . $Response[\TpLink\Api\Result]['stok'] . '/ds';
                 $this->TpLinkCipherKey = '';
@@ -504,7 +505,7 @@ namespace TpLink\Crypt
                     \TpLink\Api\Param::Username => base64_encode(sha1($this->ReadPropertyString(\TpLink\Property::Username)))
                 ]
             ));
-            $this->SendDebug(__FUNCTION__, $Payload, 0);
+            $this->SendDebug(__FUNCTION__, \TpLink\Api\Protocol::MaskSensitive($Payload), 0);
             $tp_link_cipher = new \TpLink\Crypt\AESCipher($this->TpLinkCipherKey, $this->TpLinkCipherIV);
             $EncryptedPayload = $tp_link_cipher->encrypt($Payload);
             $SecurePassthroughPayload = \TpLink\Crypt\Protocol::BuildSecurePassthroughRequest($EncryptedPayload);
@@ -513,7 +514,7 @@ namespace TpLink\Crypt
                 return false;
             }
             $json = json_decode($tp_link_cipher->decrypt(json_decode($Result, true)[\TpLink\Api\Result][\TpLink\Api\Result::Response]), true);
-            $this->SendDebug(__FUNCTION__ . ' Result', $json, 0);
+            $this->SendDebug(__FUNCTION__ . ' Result', \TpLink\Api\Protocol::MaskSensitive($json), 0);
             if ($json[\TpLink\Api\ErrorCode] == 0) {
                 $this->TokenUrl = $this->ReadPropertyString(\TpLink\Property::Protocol) . $this->ReadPropertyString(\TpLink\Property::Host) . \TpLink\Crypt\Url::App . '?' . http_build_query([\TpLink\Crypt\Url::Token => $json[\TpLink\Api\Result]['token']]);
                 return true;
@@ -724,7 +725,7 @@ namespace TpLink\Crypt
             $RemoteSeed = substr($Result, 0, 16);
             $ServerHash = substr($Result, 16);
             $UserTest = hash('sha256', $Payload . $RemoteSeed . $UserHash, true);
-            $this->SendDebug('Config User', $UserTest, 0);
+            $this->SendDebug('Config User', \TpLink\Api\Protocol::MaskValue($UserTest), 0);
             if ($ServerHash == $UserTest) {
                 $this->KlapLocalSeed = $Payload;
                 $this->KlapRemoteSeed = $RemoteSeed;
@@ -736,7 +737,7 @@ namespace TpLink\Crypt
                 'kasaSetup'
             );
             $UserTest = hash('sha256', $Payload . $RemoteSeed . $UserHash, true);
-            $this->SendDebug('Generic User', $UserTest, 0);
+            $this->SendDebug('Generic User', \TpLink\Api\Protocol::MaskValue($UserTest), 0);
             if ($ServerHash == $UserTest) {
                 $this->KlapLocalSeed = $Payload;
                 $this->KlapRemoteSeed = $RemoteSeed;
@@ -748,7 +749,7 @@ namespace TpLink\Crypt
                 ''
             );
             $UserTest = hash('sha256', $Payload . $RemoteSeed . $UserHash, true);
-            $this->SendDebug('Empty User', $UserTest, 0);
+            $this->SendDebug('Empty User', \TpLink\Api\Protocol::MaskValue($UserTest), 0);
             if ($ServerHash == $UserTest) {
                 $this->KlapLocalSeed = $Payload;
                 $this->KlapRemoteSeed = $RemoteSeed;
@@ -781,7 +782,7 @@ namespace TpLink\Crypt
         private function KlapEncryptedRequest(string $Payload): string
         {
             $this->SendDebug(__FUNCTION__, $Payload, 0);
-            if ($this->KlapLocalSeed === '') {
+            if ((string) $this->KlapLocalSeed === '') {
                 if (!$this->Init()) {
                     set_error_handler([$this, 'ModulErrorHandler']);
                     trigger_error($this->Translate('Not connected'), E_USER_NOTICE);

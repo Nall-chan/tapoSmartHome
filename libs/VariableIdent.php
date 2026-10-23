@@ -20,6 +20,8 @@ namespace TpLink\VariableIdent
     const Battery = '\TpLink\VariableIdentBattery';
     const Trv = '\TpLink\VariableIdentTrv';
     const OpenClose = '\TpLink\VariableIdentOpenClose';
+    const MotionSensor = '\TpLink\VariableIdentMotionSensor';
+    const WaterLeak = '\TpLink\VariableIdentWaterLeak';
 }
 
 namespace TpLink
@@ -655,6 +657,108 @@ namespace TpLink
                             'ColorValue'  => 0x0000ff
                         ]
 
+                    ]
+                ],
+                HasAction    => false
+            ]
+        ];
+    }
+    /**
+     * Bewegungsmelder T100 (Kategorie subg.trigger.motion-sensor).
+     * Feld `detected` aus get_device_info (nicht am Gerät geprüft).
+     */
+    class VariableIdentMotionSensor extends VariableIdent
+    {
+        public const detected = 'detected';
+        public static $Variables = [
+            self::detected=> [
+                IPSVarName        => 'Motion',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION   => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'OPTIONS'      => [
+                        [
+                            'Value'       => false,
+                            'Caption'     => 'No motion',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => -1
+                        ],
+                        [
+                            'Value'       => true,
+                            'Caption'     => 'Motion detected',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => 0x0000ff
+                        ]
+                    ]
+                ],
+                HasAction    => false
+            ]
+        ];
+    }
+
+    /**
+     * Wasserlecksensor T300 (Kategorie subg.trigger.water-leak-sensor).
+     * Felder `water_leak_status` ('water_dry' / 'water_leak') und `in_alarm` aus get_device_info
+     * (nicht am Gerät geprüft).
+     */
+    class VariableIdentWaterLeak extends VariableIdent
+    {
+        public const water_leak_status = 'water_leak_status';
+        public const in_alarm = 'in_alarm';
+        public static $Variables = [
+            self::water_leak_status=> [
+                IPSVarName        => 'Water leak',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION   => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'OPTIONS'      => [
+                        [
+                            'Value'       => false,
+                            'Caption'     => 'Dry',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => -1
+                        ],
+                        [
+                            'Value'       => true,
+                            'Caption'     => 'Leak detected',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => 0xff0000
+                        ]
+                    ]
+                ],
+                HasAction         => false,
+                ReceiveFunction   => 'WaterLeakStatusToBool'
+            ],
+            self::in_alarm=> [
+                IPSVarName        => 'Alarm',
+                IPSVarType        => VARIABLETYPE_BOOLEAN,
+                IPSVarPresentation=> [
+                    PRESENTATION   => VARIABLE_PRESENTATION_VALUE_PRESENTATION,
+                    'OPTIONS'      => [
+                        [
+                            'Value'       => false,
+                            'Caption'     => 'OK',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => -1
+                        ],
+                        [
+                            'Value'       => true,
+                            'Caption'     => 'Alarm',
+                            'IconActive'  => false,
+                            'IconValue'   => '',
+                            'ColorActive' => true,
+                            'ColorValue'  => 0xff0000
+                        ]
                     ]
                 ],
                 HasAction    => false

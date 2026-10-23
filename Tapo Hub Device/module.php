@@ -11,10 +11,10 @@ require_once dirname(__DIR__) . '/libs/VariableIdent.php';
  * Erweitert IPSModule.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  *
  * @method bool SendDebug(string $Message, mixed $Data, int $Format)
  * @method void UnregisterProfile(string $Name)
@@ -47,6 +47,7 @@ class TapoHubDevice extends IPSModuleStrict
         //Never delete this line!
         parent::ApplyChanges();
 
+        $this->MigrateTargetTemperature();
         $this->UnregisterProfile(\TpLink\VariableProfile::TargetTemperature);
 
         $DeviceId = $this->ReadPropertyString(\TpLink\Property::DeviceId);
@@ -66,6 +67,10 @@ class TapoHubDevice extends IPSModuleStrict
     public function ReceiveData(string $JSONString): string
     {
         $Data = json_decode($JSONString, true);
+        if (!is_array($Data) || !isset($Data[\TpLink\Api\Protocol::Method], $Data[\TpLink\Api\Result])) {
+            $this->SendDebug('ReceiveData', 'Invalid data', 0);
+            return '';
+        }
         $Method = $Data[\TpLink\Api\Protocol::Method];
         $Result = $Data[\TpLink\Api\Result];
         $this->SendDebug('Event[' . $Method . ']', $Result, 0);
@@ -251,6 +256,33 @@ class TapoHubDevice extends IPSModuleStrict
     }
 
     /**
+     * MigrateTargetTemperature
+     * Entfernt die Bindung der Solltemperatur an das nicht mehr vorhandene Variablenprofil 'Tapo.Temperature.Room',
+     * indem die aktuelle Darstellung der Variable neu gesetzt wird.
+     *
+     * @return void
+     */
+    private function MigrateTargetTemperature(): void
+    {
+        $VariableID = @$this->GetIDForIdent(\TpLink\VariableIdentTrv::target_temp);
+        if (!$VariableID) {
+            return;
+        }
+        if (IPS_GetVariable($VariableID)['VariableProfile'] !== \TpLink\VariableProfile::TargetTemperature) {
+            return;
+        }
+        $VarParams = \TpLink\VariableIdentTrv::$Variables[\TpLink\VariableIdentTrv::target_temp];
+        $this->MaintainVariable(
+            \TpLink\VariableIdentTrv::target_temp,
+            $this->Translate($VarParams[\TpLink\IPSVarName]),
+            $VarParams[\TpLink\IPSVarType],
+            $this->TranslatePresentation($VarParams[\TpLink\IPSVarPresentation]),
+            0,
+            true
+        );
+    }
+
+    /**
      * ModulErrorHandler
      *
      * @param  int $errno
@@ -275,6 +307,20 @@ class TapoHubDevice extends IPSModuleStrict
             return [];
         }
         return \TpLink\HubChildDevicesCategory::GetVariableIdentsByCategory($Category);
+    }
+
+    /**
+     * WaterLeakStatusToBool
+     *
+     * @param  array $Values
+     * @return ?bool null, wenn das Gerät den Wert nicht mitgeliefert hat (Variable behält ihren letzten Wert)
+     */
+    private function WaterLeakStatusToBool(array $Values): ?bool
+    {
+        if (!isset($Values[\TpLink\VariableIdentWaterLeak::water_leak_status])) {
+            return null;
+        }
+        return $Values[\TpLink\VariableIdentWaterLeak::water_leak_status] === 'water_leak';
     }
 
     /**

@@ -9,15 +9,34 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  * Erweitert \TpLink\Device.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  *
  * @property array $SirenTypePresentation
+ * @property int $ComponentsTimestamp
  */
 class TapoHubIO200 extends \TpLink\Device
 {
+    /**
+     * Mindestabstand in Sekunden, in dem die Fähigkeiten des Hubs (Sirene, LED, SD-Karte) neu gelesen werden.
+     * Der Zustand der angelernten Geräte wird bei jeder Abfrage gelesen.
+     */
+    private const ComponentsInterval = 30;
+
+    /**
+     * Create
+     *
+     * @return void
+     */
+    public function Create(): void
+    {
+        //Never delete this line!
+        parent::Create();
+        $this->ComponentsTimestamp = 0;
+    }
+
     /**
      * ApplyChanges
      *
@@ -26,6 +45,7 @@ class TapoHubIO200 extends \TpLink\Device
     public function ApplyChanges(): void
     {
         $this->SirenTypePresentation = [];
+        $this->ComponentsTimestamp = 0;
         //Never delete this line!
         parent::ApplyChanges();
         if ($this->GetStatus() == IS_ACTIVE) {
@@ -41,36 +61,18 @@ class TapoHubIO200 extends \TpLink\Device
     public function RequestState(): bool
     {
         if (parent::RequestState()) {
-            $this->FetchAppComponents();
-            foreach ($this->ChildIDs as $ChildID) {
-                $Params = [
-                    'childControl' => [
-                        'device_id'   => $ChildID,
-                        'request_data'=> [
-                            \TpLink\Api\Protocol::Method => \TpLink\Api\Method::GetDeviceInfo,
-                            \TpLink\Api\Protocol::Params => null
-                        ]
-                    ]
-                ];
-                $Request = \TpLink\Api\Protocol::BuildRequest(\TpLink\Api\MethodV3::ControlChild, '', $Params);
-                $Response = $this->SendMultipleRequest([$Request]);
-                if (!isset($Response[\TpLink\Api\MethodV3::ControlChild]['response_data'])) {
-                    continue;
-                }
-                $Response = $Response[\TpLink\Api\MethodV3::ControlChild]['response_data'];
-                $this->SendDebug('Response', $Response, 0);
-                if ($Response[\TpLink\Api\ErrorCode] != \TpLink\Api\ErrorCodes::Success) {
-                    set_error_handler([$this, 'ModulErrorHandler']);
-                    trigger_error($Response[\TpLink\Api\ErrorCode] . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText($Response[\TpLink\Api\ErrorCode])), E_USER_NOTICE);
-                    restore_error_handler();
-                    continue;
-                }
+            if ((time() - (int) $this->ComponentsTimestamp) >= self::ComponentsInterval) {
+                $this->FetchAppComponents();
+                $this->ComponentsTimestamp = time();
+            }
+            // Eine Anfrage liefert den Zustand aller angelernten Geräte (statt einer Anfrage je Gerät)
+            foreach ($this->FetchChildDevices() as $ChildDevice) {
                 $this->SendDataToChildren(json_encode(
                     [
                         'DataID'                       => \TpLink\GUID::HubSendToChild,
                         \TpLink\Api\Protocol::Method   => \TpLink\Api\Method::GetDeviceInfo,
-                        \TpLink\Property::DeviceId     => $ChildID,
-                        \TpLink\Api\Result             => $Response[\TpLink\Api\Result]
+                        \TpLink\Property::DeviceId     => $ChildDevice[\TpLink\Api\Result::DeviceID],
+                        \TpLink\Api\Result             => $ChildDevice
                     ]
                 ));
             }
@@ -120,6 +122,109 @@ class TapoHubIO200 extends \TpLink\Device
         }
         return serialize($Response);
     }
+    /**
+     * ProbeRawRequest
+     *
+     * Entwicklerfunktion: Sendet eine beliebige Anfrage an den Hub und liefert die rohen Antworten.
+     * Nur zum Ermitteln von Protokolldetails, nicht in der Dokumentation.
+     *
+     * @param  string $Method Name der Methode
+     * @param  string $ParamsJson Parameter als JSON, leer für keine
+     * @return array
+     */
+    public function ProbeRawRequest(string $Method, string $ParamsJson = ''): array
+    {
+        return $this->SendMultipleRequest([
+            [
+                \TpLink\Api\Protocol::Method => $Method,
+                \TpLink\Api\Protocol::Params => ($ParamsJson == '') ? null : json_decode($ParamsJson, true)
+            ]
+        ]);
+    }
+
+    /**
+     * ProbeChildRequest
+     *
+     * Entwicklerfunktion: Sendet eine beliebige Anfrage an ein angelerntes Gerät und liefert die rohe Antwort des Hubs.
+     * Nur zum Ermitteln von Protokolldetails, nicht in der Dokumentation.
+     *
+     * @param  string $DeviceId Geräte ID des Kindes
+     * @param  string $Method Name der Methode des Kindes
+     * @param  string $ParamsJson Parameter als JSON, leer für keine
+     * @return array
+     */
+    public function ProbeChildRequest(string $DeviceId, string $Method, string $ParamsJson = ''): array
+    {
+        $Params = [
+            'childControl'=> [
+                'device_id'   => $DeviceId,
+                'request_data'=> [
+                    \TpLink\Api\Protocol::Method => $Method,
+                    \TpLink\Api\Protocol::Params => ($ParamsJson == '') ? null : json_decode($ParamsJson, true)
+                ]
+            ]
+        ];
+        return $this->SendMultipleRequest([
+            [
+                \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::ControlChild,
+                \TpLink\Api\Protocol::Params => $Params
+            ]
+        ]);
+    }
+
+    /**
+     * GetTriggerLogs
+     *
+     * Liest das Ereignisprotokoll (Kontakt geöffnet/geschlossen, Bewegung, Tastendruck, ...) eines am Hub angelernten Gerätes.
+     *
+     * @param  string $DeviceId Geräte ID des Kindes (Spalte `Geräte ID` im Hub Configurator)
+     * @param  int $StartId ID des Eintrags, ab dem rückwärts gelesen wird, `0` liefert die neuesten Einträge
+     * @param  int $PageSize Maximale Anzahl der Einträge
+     * @return false|array false bei Fehler, sonst das Ergebnis des Hubs (`start_id`, `sum`, `logs`, neueste Einträge zuerst)
+     */
+    public function GetTriggerLogs(string $DeviceId, int $StartId = 0, int $PageSize = 10): false|array
+    {
+        if (($DeviceId == '') || ($PageSize < 1)) {
+            trigger_error($this->Translate('Invalid parameter'), E_USER_NOTICE);
+            return false;
+        }
+        $Params = [
+            'childControl'=> [
+                'device_id'   => $DeviceId,
+                'request_data'=> [
+                    \TpLink\Api\Protocol::Method => 'get_trigger_logs',
+                    \TpLink\Api\Protocol::Params => ['page_size' => $PageSize, 'start_id' => $StartId]
+                ]
+            ]
+        ];
+        $Response = $this->SendMultipleRequest([
+            [
+                \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::ControlChild,
+                \TpLink\Api\Protocol::Params => $Params
+            ]
+        ]);
+        $this->SendDebug('TriggerLogs', $Response, 0);
+        $ResponseData = $Response[\TpLink\Api\MethodV3::ControlChild]['response_data'] ?? null;
+        if (!is_array($ResponseData)) {
+            return false;
+        }
+        if (($ResponseData[\TpLink\Api\ErrorCode] ?? -1) != \TpLink\Api\ErrorCodes::Success) {
+            trigger_error(($ResponseData[\TpLink\Api\ErrorCode] ?? '') . ' ' . $this->Translate(\TpLink\Api\ErrorCodes::getText((int) ($ResponseData[\TpLink\Api\ErrorCode] ?? 0))), E_USER_NOTICE);
+            return false;
+        }
+        return $ResponseData[\TpLink\Api\Result];
+    }
+
+    /**
+     * StartSiren
+     *
+     * Startet die Sirene des Hubs mit den übergebenen Werten und stellt danach die vorher gelesene Konfiguration wieder her.
+     *
+     * @param  int $Duration Dauer in Sekunden (1 bis 300)
+     * @param  int $Volume Lautstärke (1 bis 10)
+     * @param  string $SirenType Name des Klingeltons, z. B. 'Alarm 5' oder 'Doorbell Ring 1'
+     * @return bool true wenn die Sirene gestartet und die Konfiguration wiederhergestellt wurde
+     */
     public function StartSiren(int $Duration, int $Volume, string $SirenType): bool
     {
         $Response = $this->SendMultipleRequest(
@@ -166,7 +271,8 @@ class TapoHubIO200 extends \TpLink\Device
                     ]
                 ]
             );
-            return isset($Response2[\TpLink\Api\MethodV3::SetSirenConfig]) && (isset($Response2[\TpLink\Api\MethodV3::SetSirenStatus]));
+            // Erfolg: Sirene wurde gestartet (Antwort der ersten Anfrage) und die ursprüngliche Konfiguration wiederhergestellt (zweite Anfrage)
+            return isset($Response[\TpLink\Api\MethodV3::SetSirenStatus]) && isset($Response2[\TpLink\Api\MethodV3::SetSirenConfig]);
         }
         return false;
     }
@@ -264,32 +370,30 @@ class TapoHubIO200 extends \TpLink\Device
      */
     private function FetchChildDevices(): array
     {
-        $Response = $this->SendMultipleRequest([
-            [
-                \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetChildDeviceList,
-                \TpLink\Api\Protocol::Params => [
-                    'childControl'=> [
-                        'start_index' => 0
-                    ]
-                ]
-            ]/*,
-            [
-                \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetChildDeviceComponentList,
-                \TpLink\Api\Protocol::Params => [
-                    'childControl'=> [
-                        'start_index' => 0
-                    ]
-                ]
-            ]*/
-        ]);
         $ChildIDs = [];
         $ChildData = [];
-        if (isset($Response[\TpLink\Api\MethodV3::GetChildDeviceList][\TpLink\Api\Result::ChildList])) {
-            $ChildData = $Response[\TpLink\Api\MethodV3::GetChildDeviceList][\TpLink\Api\Result::ChildList];
-            foreach ($ChildData as $ChildDevice) {
+        $StartIndex = 0;
+        do {
+            $Response = $this->SendMultipleRequest([
+                [
+                    \TpLink\Api\Protocol::Method => \TpLink\Api\MethodV3::GetChildDeviceList,
+                    \TpLink\Api\Protocol::Params => [
+                        'childControl'=> [
+                            'start_index' => $StartIndex
+                        ]
+                    ]
+                ]
+            ]);
+            $Result = $Response[\TpLink\Api\MethodV3::GetChildDeviceList] ?? null;
+            if (!is_array($Result) || !isset($Result[\TpLink\Api\Result::ChildList]) || !count($Result[\TpLink\Api\Result::ChildList])) {
+                break;
+            }
+            foreach ($Result[\TpLink\Api\Result::ChildList] as $ChildDevice) {
+                $ChildData[] = $ChildDevice;
                 $ChildIDs[] = $ChildDevice[\TpLink\Api\Result::DeviceID];
             }
-        }
+            $StartIndex = count($ChildData);
+        } while ($StartIndex < (int) ($Result['sum'] ?? 0));
         $this->ChildIDs = $ChildIDs;
         $this->SendDebug('Childs', $ChildIDs, 0);
         return $ChildData;

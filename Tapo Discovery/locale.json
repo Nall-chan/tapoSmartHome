@@ -8,7 +8,9 @@
             "Type": "Typ",
             "No Devices found!": "Keine Geräte gefunden",
             "The combination of Docker and NAT is not supported because Broadcasts are not possible.\r\nPlease run the container in the host network.\r\nOr create and configure the required tapo instances manually.": "Die Kombination von Docker und NAT wird nicht unterstützt, da Broadcasts nicht möglich sind.\r\nBitte führen Sie den Container im Host-Netzwerk aus.\r\nOder erstellen und konfigurieren Sie die erforderlichen tapo-Instanzen manuell.",
-            "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:": "Dieses Modul ist für die nicht kommerzielle Nutzung kostenlos,\r\nSchenkungen als Unterstützung für den Autor werden hier akzeptiert:"
+            "Devices with the unsupported encryption scheme were found.": "Es wurden Geräte mit einem nicht unterstützten Verschlüsselungsverfahren gefunden.",
+            "Devices with the unsupported encryption scheme %s were found. They cannot be created.": "Es wurden Geräte mit dem nicht unterstützten Verschlüsselungsverfahren %s gefunden. Sie können nicht angelegt werden.",
+            "Donations in support of the author are accepted here:": "Schenkungen als Unterstützung für den Autor werden hier akzeptiert:"
         }
     }
 }

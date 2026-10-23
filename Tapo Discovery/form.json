@@ -66,6 +66,12 @@
             "values": []
         },
         {
+            "type": "Label",
+            "name": "UnsupportedLabel",
+            "caption": "Devices with the unsupported encryption scheme were found.",
+            "visible": false
+        },
+        {
             "name": "ErrorPopup",
             "type": "PopupAlert",
             "visible": false,
@@ -87,7 +93,7 @@
         },
         {
             "type": "Label",
-            "caption": "This module is free for non-commercial use,\r\nDonations in support of the author are accepted here:"
+            "caption": "Donations in support of the author are accepted here:"
         },
         {
             "type": "RowLayout",

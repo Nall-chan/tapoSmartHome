@@ -11,10 +11,10 @@ namespace {
  * Enthält Klassen welche die API und Geräte Fähigkeiten abbilden.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  */
 
 namespace TpLink\Api
@@ -283,6 +283,56 @@ namespace TpLink\Api
         private const DiscoveryKey = 'rsa_key';
         private const requestTimeMils = 'request_time_milis';
         private const TerminalUUID = 'terminalUUID';
+        private const SensitiveKeys = ['password', 'digest_passwd', 'token', 'stok'];
+
+        /**
+         * MaskSensitive
+         * Ersetzt Passwörter, Hashes und Tokens für die Debug-Ausgabe durch einen Platzhalter mit Länge.
+         *
+         * @param  string|array $Data JSON-String oder Array
+         * @return string|array gleicher Typ wie die Eingabe
+         */
+        public static function MaskSensitive(string|array $Data): string|array
+        {
+            if (is_string($Data)) {
+                $Decoded = json_decode($Data, true);
+                if (!is_array($Decoded)) {
+                    return $Data;
+                }
+                return json_encode(self::MaskSensitive($Decoded));
+            }
+            foreach ($Data as $Key => $Value) {
+                if (is_array($Value)) {
+                    $Data[$Key] = self::MaskSensitive($Value);
+                } elseif (is_string($Value) && in_array($Key, self::SensitiveKeys, true)) {
+                    $Data[$Key] = self::MaskValue($Value);
+                }
+            }
+            return $Data;
+        }
+
+        /**
+         * MaskValue
+         *
+         * @param  string $Value
+         * @return string Platzhalter mit Länge des Wertes
+         */
+        public static function MaskValue(string $Value): string
+        {
+            return '***(' . strlen($Value) . ')';
+        }
+
+        /**
+         * MaskUrl
+         * Maskiert Token (stok=... bzw. token=...) in URLs.
+         *
+         * @param  string $Url
+         * @return string
+         */
+        public static function MaskUrl(string $Url): string
+        {
+            return preg_replace(['/(stok=)[^\/&?]+/', '/(token=)[^&]+/'], '$1***', $Url);
+        }
 
         /**
          * BuildHandshakeRequest
@@ -2600,6 +2650,8 @@ namespace TpLink
         public const TRV = 'trv';
         public const TempHmdtSensor = 'temp-hmdt-sensor';
         public const ContantSensor = 'contact-sensor';
+        public const MotionSensor = 'motion-sensor';
+        public const WaterLeakSensor = 'water-leak-sensor';
         private static $Idents = [
             self::TempHmdtSensor => [
                 VariableIdent\Online,
@@ -2621,6 +2673,18 @@ namespace TpLink
                 VariableIdent\Rssi,
                 VariableIdent\OpenClose
 
+            ],
+            self::MotionSensor => [
+                VariableIdent\Online,
+                VariableIdent\Battery,
+                VariableIdent\Rssi,
+                VariableIdent\MotionSensor
+            ],
+            self::WaterLeakSensor => [
+                VariableIdent\Online,
+                VariableIdent\Battery,
+                VariableIdent\Rssi,
+                VariableIdent\WaterLeak
             ]
         ];
 
@@ -2713,6 +2777,94 @@ namespace TpLink
     class Timer
     {
         public const RequestState = 'RequestState';
+    }
+
+    /**
+     * LoginGuard
+     * Entscheidet, ob nach einer abgelehnten Anmeldung erneut angemeldet werden darf (ohne Symcon-Abhängigkeit).
+     * Geräte sperren sich nach zu vielen Fehlversuchen (`max_time`, meist 10). Das Modul darf das Gerät
+     * nicht durch ständige Wiederholungen selbst sperren.
+     */
+    class LoginGuard
+    {
+        /** Pause in Sekunden nach der ersten abgelehnten Anmeldung */
+        public const PauseSeconds = 60;
+        /** Ab dieser Zahl abgelehnter Anmeldungen in Folge wird nicht mehr automatisch angemeldet */
+        public const MaxRejections = 2;
+        /** Bei weniger verbleibenden Versuchen am Gerät wird sofort gestoppt */
+        public const MinAttemptsLeft = 4;
+
+        /**
+         * GetPause
+         *
+         * @param  int $Rejections Anzahl der abgelehnten Anmeldungen in Folge (inklusive der aktuellen)
+         * @param  int $AttemptsLeft Laut Gerät verbleibende Versuche, -1 wenn unbekannt
+         * @return ?int Pause in Sekunden bis zum nächsten Versuch, null wenn nicht mehr automatisch angemeldet wird
+         */
+        public static function GetPause(int $Rejections, int $AttemptsLeft = -1): ?int
+        {
+            if (($AttemptsLeft >= 0) && ($AttemptsLeft < self::MinAttemptsLeft)) {
+                return null;
+            }
+            if ($Rejections >= self::MaxRejections) {
+                return null;
+            }
+            return self::PauseSeconds;
+        }
+
+        /**
+         * GetAttemptsLeft
+         *
+         * @param  ?array $Response Antwort des Geräts auf die erste Anmeldeanfrage (`result.data.time` und `max_time`)
+         * @return int Verbleibende Versuche, -1 wenn das Gerät keine Angabe macht
+         */
+        public static function GetAttemptsLeft(?array $Response): int
+        {
+            $Data = $Response['result']['data'] ?? null;
+            if (!is_array($Data) || !isset($Data['time'], $Data['max_time']) || !is_numeric($Data['time']) || !is_numeric($Data['max_time'])) {
+                return -1;
+            }
+            return max(0, (int) $Data['max_time'] - (int) $Data['time']);
+        }
+    }
+
+    /**
+     * Network
+     * Hilfsfunktionen für die Suche im Netzwerk (ohne Symcon-Abhängigkeit).
+     */
+    class Network
+    {
+        /**
+         * GetBroadcastTargets
+         *
+         * Ermittelt je IPv4-Netzwerkschnittstelle die lokale Adresse und die Broadcast-Adresse des Netzes.
+         * Ein Broadcast an 255.255.255.255 verlässt den Rechner nur über eine Schnittstelle (meist die mit der besten Route),
+         * bei mehreren Netzwerkkarten oder virtuellen Adaptern (Hyper-V, WSL, Docker) erreicht er die Geräte dann nicht.
+         * Der Eintrag 0.0.0.0 => 255.255.255.255 bleibt als Rückfall immer erhalten.
+         *
+         * @param  array $Interfaces Ergebnis von net_get_interfaces()
+         * @return array Liste von ['Source' => lokale IP, 'Target' => Broadcast-Adresse]
+         */
+        public static function GetBroadcastTargets(array $Interfaces): array
+        {
+            $Targets = [];
+            foreach ($Interfaces as $Interface) {
+                foreach ($Interface['unicast'] ?? [] as $Unicast) {
+                    $Address = $Unicast['address'] ?? '';
+                    $Netmask = $Unicast['netmask'] ?? '';
+                    if (!filter_var($Address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || !filter_var($Netmask, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                        continue;
+                    }
+                    if (str_starts_with($Address, '127.') || str_starts_with($Address, '169.254.') || $Netmask == '255.255.255.255') {
+                        continue;
+                    }
+                    $Broadcast = long2ip(ip2long($Address) | (~ip2long($Netmask) & 0xFFFFFFFF));
+                    $Targets[$Address] = ['Source' => $Address, 'Target' => $Broadcast];
+                }
+            }
+            $Targets['0.0.0.0'] = ['Source' => '0.0.0.0', 'Target' => '255.255.255.255'];
+            return array_values($Targets);
+        }
     }
 
     /*

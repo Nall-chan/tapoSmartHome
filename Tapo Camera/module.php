@@ -9,10 +9,10 @@ require_once dirname(__DIR__) . '/libs/TapoDevice.php';
  * Erweitert \TpLink\Device.
  *
  * @author        Michael Tröger <micha@nall-chan.net>
- * @copyright     2024 Michael Tröger
- * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
+ * @copyright     2024-2026 Michael Tröger
+ * @license       Custom Non-Commercial Share-Alike License (see LICENSE)
  *
- * @version       1.70
+ * @version       2.23
  *
  * @property array $MsgAlarmType
  * @property array $MsgPushType
@@ -50,7 +50,7 @@ class TapoCamera extends \TpLink\Device
         $Host = $this->ReadPropertyString(\TpLink\Property::Host);
         $Stream = $this->ReadPropertyString(\TpLink\Property::Stream);
         $StreamURL = 'rtsp://' . urlencode($Username) . ':' . urlencode($Password) . '@' . $Host . ':554/' . $Stream;
-        $this->SendDebug('MediaURL', $StreamURL, 0);
+        $this->SendDebug('MediaURL', 'rtsp://' . urlencode($Username) . ':***@' . $Host . ':554/' . $Stream, 0);
         if ($StreamURL) {
             $this->SetMedia($StreamURL);
         }
